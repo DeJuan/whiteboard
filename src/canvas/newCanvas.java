@@ -9,72 +9,74 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+
 
 
 /**
- * This is my implementation of the Warmup. I borrowed a lot of code from DeJuan's warmup
- * to implement the eraser, but I also added basic color and pen size support.
+ * This is my finalized implementation of the Warmup. 
+ * I added a toolbar and fully functional color palette.
+ * 
+ * Note that as it functions now, the palette popup bypasses the 
+ * palette listener, directly returning the color when the user clicks OK.
+ * I then change the current pen color to the returned color from the dialog.
+ * @author DeJuan 
  */
-public class JoeWarmupCanvas extends JPanel{
+public class newCanvas extends JPanel{
     
 	private static final long serialVersionUID = 1L;
 	// image where the user's drawing is stored
     private Image drawingBuffer;
-    public boolean eraserMode = false;
-    public JRadioButton blue;
-    public JRadioButton green;
-    public JRadioButton red;
-    public JRadioButton black;
-    public JTextField strokeWidth;
-    public ButtonGroup colorSelect;
-        
+    private boolean eraserMode = false;
+    private JTextField strokeWidth;
+    private Color currentPenColor = Color.black;
+    private JColorChooser palette = new JColorChooser(Color.black);
+    
+    
+    
     /**
      * Make a canvas.
      * @param width width in pixels
      * @param height height in pixels
      */
-    public JoeWarmupCanvas(int width, int height) 
+    public newCanvas(int width, int height) 
     {
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
         addEraserController();
         
-        JLabel redLabel = new JLabel("Red");
-        red = new JRadioButton();
-        JLabel greenLabel = new JLabel("Green");
-        green = new JRadioButton();
-        JLabel blueLabel = new JLabel("Blue");
-        blue = new JRadioButton();
-        JLabel blackLabel = new JLabel("Black");
-        black = new JRadioButton();
-        colorSelect = new ButtonGroup();
-        colorSelect.add(black);
-        colorSelect.add(red);
-        colorSelect.add(blue);
-        colorSelect.add(green);
+        JToolBar toolbar = new JToolBar();
+       
+        
+        PaletteListener paletteController = new PaletteListener();
+        palette.getSelectionModel().addChangeListener(paletteController);
+        palette.setPreviewPanel(new JPanel());
+        
+        JButton paletteButton = new JButton("Show Color Palette");
+        paletteButton.addMouseListener(new PalettePopupListener());
+        
+        JButton resetter = new JButton("Reset All");
+        resetter.addMouseListener(new resetListener());
         
         JLabel widthLabel = new JLabel("Pen Size");
         strokeWidth = new JTextField("1");
         strokeWidth.setPreferredSize(new Dimension(40,20));
+        
         JToggleButton DrawOrErase = new JToggleButton("Eraser Mode",false);
         DrawOrErase.addMouseListener(new eraseButtonListener());
-        add(DrawOrErase);
-        add(blackLabel);
-        add(black);
-        add(redLabel);
-        add(red);
-        add(blueLabel);
-        add(blue);
-        add(greenLabel);
-        add(green);
-        add(widthLabel);
-        add(strokeWidth);
+        toolbar.add(DrawOrErase);
+        toolbar.add(paletteButton);
+        toolbar.add(widthLabel);
+        toolbar.add(strokeWidth);
+        toolbar.add(resetter);
+        add(toolbar);
         //Make the buttons, add the mouse listener to them, and add the buttons to the canvas.
         
         // note: we can't call makeDrawingBuffer here, because it only
@@ -162,33 +164,20 @@ public class JoeWarmupCanvas extends JPanel{
      * Draw a line between two points (x1, y1) and (x2, y2), specified in
      * pixels relative to the upper-left corner of the drawing buffer.
      */
-    private void drawLineSegment(int x1, int y1, int x2, int y2) 
+    private void drawLineSegment(int x1, int y1, int x2, int y2, int color, int width) 
     {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-        g.setColor(Color.BLACK);
-        System.out.println(red.isSelected());
-        if (black.isSelected()){
-        	g.setColor(Color.BLACK);
-        }
-        else if (red.isSelected()){
-        	g.setColor(Color.RED);
-        }
-        else if (blue.isSelected()){
-        	g.setColor(Color.BLUE);
-        }
-        else if (green.isSelected()){
-        	g.setColor(Color.GREEN);;
-        }
-        
-        String penSizeStr = strokeWidth.getText();
-        int penSize;
-        try{
-        	penSize = Integer.parseInt(penSizeStr);
-        }
-        catch(Exception e){
-        	penSize = 1;
-        }
-        g.setStroke(new BasicStroke(penSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER ));
+        Color strokeColor = new Color(color);
+        g.setColor(strokeColor);
+//        String penSizeStr = strokeWidth.getText();
+//        int penSize;
+//        try{
+//        	penSize = Integer.parseInt(penSizeStr);
+//        }
+//        catch(Exception e){
+//        	penSize = 1;
+//        }
+        g.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
@@ -246,7 +235,15 @@ public class JoeWarmupCanvas extends JPanel{
         	{
             int x = e.getX();
             int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y);
+            String penSizeStr = strokeWidth.getText();
+            int penSize;
+            try{
+            	penSize = Integer.parseInt(penSizeStr);
+            }
+            catch(Exception ex){
+            	penSize = 1;
+            }
+            drawLineSegment(lastX, lastY, x, y, currentPenColor.getRGB(), penSize);
             lastX = x;
             lastY = y;
         	}
@@ -299,9 +296,8 @@ public class JoeWarmupCanvas extends JPanel{
     private void eraserLineSegment(int x1, int y1, int x2, int y2) 
     {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-        int eraserWidth = 10;
         g.setColor(Color.WHITE);
-        g.setStroke(new BasicStroke(eraserWidth));
+        g.setStroke(new BasicStroke(Integer.parseInt(strokeWidth.getText()), BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
@@ -343,6 +339,65 @@ public class JoeWarmupCanvas extends JPanel{
         public void mouseExited(MouseEvent e) { }
     }
     
+    public class PaletteListener implements ChangeListener{
+
+		@Override
+		public void stateChanged(ChangeEvent colorChosen) {
+			currentPenColor = palette.getColor();
+			
+			
+		}
+    	
+    }
+    
+    public class PalettePopupListener implements MouseListener{
+
+		@Override
+		public void mouseClicked(MouseEvent e) 
+		{
+			Color intermediate= palette.showDialog(palette, "Choose Your Color!", currentPenColor);
+			if (intermediate != null)
+			{
+				currentPenColor = intermediate;
+			}
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {}
+
+		@Override
+		public void mouseExited(MouseEvent e) {}
+
+		@Override
+		public void mousePressed(MouseEvent e) {}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {}
+    	
+    }
+    
+  //For the reset button.
+    private class resetListener implements MouseListener{
+
+		@Override
+		public void mouseClicked(MouseEvent e) 
+		{
+			fillWithWhite();	
+		}
+		//Ignore the other cases for this button. You hit it, you hit it.
+		@Override
+		public void mouseEntered(MouseEvent e) {}
+
+		@Override
+		public void mouseExited(MouseEvent e) {}
+
+		@Override
+		public void mousePressed(MouseEvent e) {}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {}
+    	
+    }
     /*
      * Main program. Make a window containing a Canvas.
      */
@@ -353,7 +408,7 @@ public class JoeWarmupCanvas extends JPanel{
                 JFrame window = new JFrame("Freehand Canvas");
                 window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 window.setLayout(new BorderLayout());
-                JoeWarmupCanvas canvas = new JoeWarmupCanvas(800, 600);
+                newCanvas canvas = new newCanvas(800, 600);
                 window.add(canvas, BorderLayout.CENTER);
                 window.pack();
                 window.setVisible(true);

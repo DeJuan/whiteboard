@@ -176,7 +176,7 @@ public class Canvas extends JPanel{
         catch(Exception e){
         	penSize = 1;
         }
-        g.setStroke(new BasicStroke(penSize));
+        g.setStroke(new BasicStroke(penSize, BasicStroke.CAP_ROUND,BasicStroke.JOIN_MITER));
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
@@ -288,7 +288,7 @@ public class Canvas extends JPanel{
     {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
         g.setColor(Color.WHITE);
-        g.setStroke(new BasicStroke(Integer.parseInt(strokeWidth.getText())));
+        g.setStroke(new BasicStroke(Integer.parseInt(strokeWidth.getText()), BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
