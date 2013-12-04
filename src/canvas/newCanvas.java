@@ -164,7 +164,7 @@ public class newCanvas extends JPanel{
      * Draw a line between two points (x1, y1) and (x2, y2), specified in
      * pixels relative to the upper-left corner of the drawing buffer.
      */
-    private void drawLineSegment(int x1, int y1, int x2, int y2, int color, int width) 
+    public void drawLineSegment(int x1, int y1, int x2, int y2, int color, int width) 
     {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
         Color strokeColor = new Color(color);
@@ -178,6 +178,7 @@ public class newCanvas extends JPanel{
 //        	penSize = 1;
 //        }
         g.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
+        System.out.println(x1+","+y1+","+x2+","+y2);
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
