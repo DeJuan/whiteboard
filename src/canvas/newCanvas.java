@@ -169,21 +169,22 @@ public class newCanvas extends JPanel{
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
         Color strokeColor = new Color(color);
         g.setColor(strokeColor);
-//        String penSizeStr = strokeWidth.getText();
-//        int penSize;
-//        try{
-//        	penSize = Integer.parseInt(penSizeStr);
-//        }
-//        catch(Exception e){
-//        	penSize = 1;
-//        }
         g.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
-        System.out.println(x1+","+y1+","+x2+","+y2);
+        //System.out.println(x1+","+y1+","+x2+","+y2);
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
         // have to notify Swing to repaint this component on the screen.
         this.repaint();
+    }
+    
+    public void drawLineSegment(Stroke stroke)
+    {
+    	Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+    	g.setColor(stroke.getColor());
+    	g.setStroke(new BasicStroke(stroke.getWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
+    	g.drawLine(stroke.getStartX(), stroke.getStartY(), stroke.getEndX(), stroke.getEndY());
+    	this.repaint();
     }
     
     /*
@@ -225,7 +226,7 @@ public class newCanvas extends JPanel{
             lastY = e.getY();
         	}
         }
-
+//TODO: MAKE THIS USE STROKES, SAME WITH THE ERASER
         /*
          * When mouse moves while a button is pressed down,
          * draw a line segment.
@@ -244,7 +245,8 @@ public class newCanvas extends JPanel{
             catch(Exception ex){
             	penSize = 1;
             }
-            drawLineSegment(lastX, lastY, x, y, currentPenColor.getRGB(), penSize);
+            Stroke currentStroke = new Stroke(lastX, lastY, x, y, currentPenColor, penSize);
+            drawLineSegment(currentStroke);
             lastX = x;
             lastY = y;
         	}
@@ -293,7 +295,7 @@ public class newCanvas extends JPanel{
 	}
 	   
    }
-    
+    /*
     private void eraserLineSegment(int x1, int y1, int x2, int y2) 
     {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
@@ -304,6 +306,15 @@ public class newCanvas extends JPanel{
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
         // have to notify Swing to repaint this component on the screen.
         this.repaint();
+    }
+    */
+    private void eraserLineSegment(Stroke eraserStroke)
+    {
+    	Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+    	g.setColor(eraserStroke.getColor());
+    	g.setStroke(new BasicStroke(eraserStroke.getWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
+    	g.drawLine(eraserStroke.getStartX(), eraserStroke.getStartY(),eraserStroke.getEndX(), eraserStroke.getEndY());
+    	this.repaint();
     }
     
    
@@ -327,7 +338,17 @@ public class newCanvas extends JPanel{
     		{
     		int x = e.getX();
     		int y = e.getY();
-    		eraserLineSegment(startingX, startingY, x, y);
+    		try
+    		{
+    			Stroke eraser = new Stroke(startingX, startingY, x, y, Color.white, Integer.parseInt(strokeWidth.getText()));
+    			eraserLineSegment(eraser);
+    		}
+    		catch(Exception notaNum)
+    		{
+    			Stroke eraser = new Stroke(startingX, startingY, x, y, Color.white, 1);
+    			eraserLineSegment(eraser);
+    		}
+    		
     		startingX = x;
     		startingY = y;
     		}
