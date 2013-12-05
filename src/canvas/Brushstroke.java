@@ -2,7 +2,7 @@ package canvas;
 
 import java.awt.Color;
 
-public class Stroke 
+public class Brushstroke 
 {
 	private final int startX;
 	private final int startY;
@@ -12,7 +12,7 @@ public class Stroke
 	private final int width;
 	
 	
-	public Stroke(int startX, int startY, int endX, int endY, Color color, int width)
+	public Brushstroke(int startX, int startY, int endX, int endY, Color color, int width)
 	{
 		this.startX = startX;
 		this.startY = startY;
@@ -22,7 +22,7 @@ public class Stroke
 		this.width = width;
 	}
 	
-	public Stroke(String information)
+	public Brushstroke(String information)
 	{
 		String[] info = information.split(",");
 		this.startX = Integer.parseInt(info[0]);

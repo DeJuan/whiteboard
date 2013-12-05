@@ -178,12 +178,12 @@ public class newCanvas extends JPanel{
         this.repaint();
     }
     
-    public void drawLineSegment(Stroke stroke)
+    public void drawLineSegment(Brushstroke Brushstroke)
     {
     	Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-    	g.setColor(stroke.getColor());
-    	g.setStroke(new BasicStroke(stroke.getWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
-    	g.drawLine(stroke.getStartX(), stroke.getStartY(), stroke.getEndX(), stroke.getEndY());
+    	g.setColor(Brushstroke.getColor());
+    	g.setStroke(new BasicStroke(Brushstroke.getWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
+    	g.drawLine(Brushstroke.getStartX(), Brushstroke.getStartY(), Brushstroke.getEndX(), Brushstroke.getEndY());
     	this.repaint();
     }
     
@@ -245,7 +245,7 @@ public class newCanvas extends JPanel{
             catch(Exception ex){
             	penSize = 1;
             }
-            Stroke currentStroke = new Stroke(lastX, lastY, x, y, currentPenColor, penSize);
+            Brushstroke currentStroke = new Brushstroke(lastX, lastY, x, y, currentPenColor, penSize);
             drawLineSegment(currentStroke);
             lastX = x;
             lastY = y;
@@ -308,7 +308,7 @@ public class newCanvas extends JPanel{
         this.repaint();
     }
     */
-    private void eraserLineSegment(Stroke eraserStroke)
+    private void eraserLineSegment(Brushstroke eraserStroke)
     {
     	Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
     	g.setColor(eraserStroke.getColor());
@@ -340,12 +340,12 @@ public class newCanvas extends JPanel{
     		int y = e.getY();
     		try
     		{
-    			Stroke eraser = new Stroke(startingX, startingY, x, y, Color.white, Integer.parseInt(strokeWidth.getText()));
+    			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, Integer.parseInt(strokeWidth.getText()));
     			eraserLineSegment(eraser);
     		}
     		catch(Exception notaNum)
     		{
-    			Stroke eraser = new Stroke(startingX, startingY, x, y, Color.white, 1);
+    			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, 1);
     			eraserLineSegment(eraser);
     		}
     		
