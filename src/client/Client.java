@@ -1,5 +1,6 @@
 package client;
-import java.awt.Color;
+import java.awt.*;
+import java.awt.List;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,9 +24,9 @@ public class Client {
 		this.address = address;
 		this.port = port;
 		this.ourCanvas= new newCanvas(500,800);
-		this.socket= new Socket();
-		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream(), true);
+		this.socket= new Socket(this.address, this.port);
+		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new PrintWriter(socket.getOutputStream(), true);
 	}
 	
 	public void handleResponses(){
@@ -38,16 +39,13 @@ public class Client {
 	 * @param command - Of the form startx,starty,endx,endy,rgbcolor,width
 	 */
 	public void interpretString(String command){
-		String[] tokensStr = command.split(",");
-		List<Integer> tokens = new ArrayList<Integer>();
-		for (String i: tokensStr){
-			tokens.add(Integer.parseInt(i));
-		}
-		ourCanvas.drawLineSegment(tokens.get(0),tokens.get(1),tokens.get(2),tokens.get(3),tokens.get(4),tokens.get(5));
+		
+		Brushstroke ourStroke = new Brushstroke(command);
+		ourCanvas.drawLineSegment(ourStroke);
 	}
 	
-	public void main(){
-		Client client = new Client("blah" , 42);
+	public void main() throws IOException{
+		Client client = new Client("blah" , 4444);
 		int rgb = Color.RED.getRGB();
 		client.interpretString("407,271,414,278," + rgb + ",5");
 	}
