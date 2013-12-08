@@ -26,22 +26,27 @@ public class Board
 	public void registerStroke(Brushstroke stroke)
 	{
 		this.listOfStrokes.add(stroke);
+		updateUsers(stroke);
 	}
 	
-	public void registerStroke(String stroke)
+	public String registerStroke(String stroke)
 	{
-		String[] inp = stroke.split(" "); //"x1 y1 x2 y2 (RRR,GGG,BBB) width
-		String[] colorParse = inp[4].split(",");
-		Color sColor = new Color(Integer.valueOf(colorParse[0]), Integer.valueOf(colorParse[1]), Integer.valueOf(colorParse[2]));
+		String[] inp = stroke.split(" "); //"brushstroke x1 y1 x2 y2 ColorData width boardNumber
+		//String[] colorParse = inp[4].split(",");
+		Color sColor = new Color(Integer.parseInt(inp[5]));
 		Brushstroke currentStroke =  new Brushstroke(Integer.valueOf(inp[0]),Integer.valueOf(inp[1]),Integer.valueOf(inp[2]),Integer.valueOf(inp[3]),sColor,Integer.valueOf(inp[5]));
 		this.listOfStrokes.add(currentStroke);
+		return updateUsers(currentStroke);
 	}
 	public void addUser(Socket newUser)
 	{
 		this.userList.add(newUser);
 	}
 	
-	
+	public String updateUsers(Brushstroke stroke)
+	{	
+		return stroke.toString();
+	}
 	
 	public int retrieveID()
 	{
