@@ -21,8 +21,8 @@ import javax.swing.event.ChangeListener;
 
 
 /**
- * This is my finalized implementation of the Warmup. 
- * I added a toolbar and fully functional color palette.
+ * This is the currently used version of the canvas.
+ * It currently has a toolbar containing eraser button, color select, pen size, and reset button. 
  * 
  * Note that as it functions now, the palette popup bypasses the 
  * palette listener, directly returning the color when the user clicks OK.

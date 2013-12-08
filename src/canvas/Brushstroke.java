@@ -65,6 +65,6 @@ public class Brushstroke
 	@Override
 	public String toString()
 	{
-		return "" + this.startX + "," + this.startY + "," + this.endX + "," + this.endY + "," + this.color.getRGB() + "," + this.width;
+		return "" + this.startX + " " + this.startY + " " + this.endX + " " + this.endY + " " + this.color.getRGB() + " " + this.width;
 	}
 }
