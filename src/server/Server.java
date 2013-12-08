@@ -10,7 +10,7 @@ public class Server
 {
 	
 	private ArrayList<Board> listOfBoards = new ArrayList<Board>();
-	private Map<Integer, ArrayList<String>> userInfo;
+	private Map<Integer, ArrayList<String>> userInfo = new HashMap<Integer, ArrayList<String>>();
 	public BlockingQueue<String> queue;
 	private ServerSocket serverSocket;
 	private Object lock = new Object(); //Made so that I don't lock on the class if I need to synchro something. 
@@ -20,6 +20,7 @@ public class Server
 		for(int i = 0; i < boardCount; i++)
 		{
 			listOfBoards.add(new Board(i));
+			userInfo.put(i, new ArrayList<String>());
 		}
 		try 
 		{
@@ -36,6 +37,7 @@ public class Server
 	{
 		//called from a new socket, initializing a user's info to point to the board we need. May need synchronization.
 		ArrayList<String> potentialBoard = this.userInfo.get(desiredBoard);
+		System.out.println("Obtained Desired Board: It is currently" + potentialBoard.toString());
 		if (!potentialBoard.contains(userName))
 		{
 			potentialBoard.add(userName);
@@ -80,7 +82,8 @@ public class Server
 	            		{
 	            			//addNewUserToBoard(); //TODO need to figure out how to get the index of the desired board in here. If we get that, we're done.
 	            			//That's the main problem of this section.
-	            			//UPDATE: Don't worry about that here. Do it later in actually handling requests. 
+	            			//UPDATE: Don't worry about that here. Do it later in actually handling requests.
+	            			System.out.println("Reached serve's try");
 	                        handleConnection(socket); //TODO add more info that needs to be passed here
 	                    } 
 	            		catch (IOException e) 
@@ -121,16 +124,17 @@ public class Server
 	    private void handleConnection(Socket socket) throws IOException {
 	        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-	        //out.println("Welcome");
+	        out.println("Welcome to the whiteboard command center.");
 	        try 
 	        {
 	            for (String line = in.readLine(); line != null; line = in.readLine()) //Need to discuss how these are going to be sent. 
 	            {
+	            	System.out.println("Succeeded in making in and out, and am about to call handleRequest");
 	                String output = handleRequest(line);  //Need to specify ahead of time which board we're adjusting. Just send the int, handle request will get the board out.  
 	                if (output != null && output != "Disconnect") 
 	                {
 	                    out.println(output);
-	                    //out.flush();
+	                    out.flush();
 	                    
 	                    if( output == "Disconnect") //write listener code for DCing from a board and send this as output.
 	                    {
@@ -153,12 +157,13 @@ public class Server
 	     * @return message to client
 	     */
 	    private String handleRequest(String input) {
-	    	int boardNumber = Integer.parseInt(input.split(" ")[7]);
-	    	Board board = listOfBoards.get(boardNumber);
+	    	
 	        String[] tokens = input.split(" ");
 	        if (tokens[0].equals("brushstroke")) //"brushstroke x1 x2 y1 y2 ColorData width boardnum 
-	        {   
-	          return board.registerStroke(input);
+	        {
+	        	int boardNumber = Integer.parseInt(input.split(" ")[7]);
+	        	Board board = listOfBoards.get(boardNumber);
+	        	return board.registerStroke(input);
 	        }
 	        
 	        else if (tokens[0].equals("joinBoard")) //"joinBoard username boardNumber
@@ -196,6 +201,14 @@ public class Server
 				}
 	        }
 	        
+	        else if(tokens[0].equals("getUserList")) //"getUserList boardNumber
+	        {
+	        	ArrayList<String> users = userInfo.get(Integer.parseInt(tokens[1]));
+	        	String usersInString = users.toString();
+	        	String usersNoBrackets = usersInString.substring(1, usersInString.length()-1);
+	        	String usersNoCommas = usersNoBrackets.replace(",", "");
+	        	return (usersNoCommas);
+	        }
 	        else
 	        {
 	        	// Should never get here--make sure to return in each of the valid cases above.
