@@ -169,8 +169,9 @@ public class Server
 	        else if (tokens[0].equals("joinBoard")) //"joinBoard username boardNumber
 	        {
 	        	try {
-						addNewUserToBoard(tokens[1], Integer.parseInt(tokens[2]));
-						return null;
+	        			int boardNum = Integer.parseInt(tokens[2]);
+						addNewUserToBoard(tokens[1], boardNum);
+						return userListParser(boardNum);
 					}  
 	        	catch (Exception e) 
 	        		{
@@ -181,11 +182,13 @@ public class Server
 	         
 	        else if (tokens[0].equals("exitBoard")) //"exitBoard username currentBoard
 	        {
-	        	removeUserFromBoard(tokens[1], Integer.parseInt(tokens[2]));
-	        	return "Disconnect";
+	        	int boardNum = Integer.parseInt(tokens[2]);
+	        	removeUserFromBoard(tokens[1], boardNum);
+	        	return userListParser(boardNum);
 	        }
-	        
-	        else if (tokens[0].equals("changeBoard"))//"changeBoard username currentBoard newBoard
+	        /*
+	        else if (tokens[0].equals("changeBoard"))//"changeBoard username currentBoard newBoard 
+	        	//TODO We have an issue with returning things here. May need to remove this. 
 	        {
 	        	try 
 	        	{
@@ -200,14 +203,15 @@ public class Server
 					System.out.println("Transfer Failed.");
 				}
 	        }
-	        
+	        */
 	        else if(tokens[0].equals("getUserList")) //"getUserList boardNumber
 	        {
-	        	ArrayList<String> users = userInfo.get(Integer.parseInt(tokens[1]));
-	        	String usersInString = users.toString();
-	        	String usersNoBrackets = usersInString.substring(1, usersInString.length()-1);
-	        	String usersNoCommas = usersNoBrackets.replace(",", "");
-	        	return (usersNoCommas);
+	        	return userListParser(Integer.parseInt(tokens[1]));
+	        }
+	        
+	        else if(tokens[0].equals("exit") || tokens[0].equals("quit") ||  tokens[0].equals("bye") || tokens[0].equals("dc") ||tokens[0].equals("disconnect"))
+	        {
+	        	return "Disconnect";
 	        }
 	        else
 	        {
@@ -218,7 +222,16 @@ public class Server
 	        return "Disconnect";
 	    }
 
-
+	    public String userListParser(int boardNum)
+	    {
+	    	ArrayList<String> users = userInfo.get(boardNum);
+        	String usersInString = users.toString();
+        	String usersNoBrackets = usersInString.substring(1, usersInString.length()-1);
+        	String usersNoCommas = usersNoBrackets.replace(",", "");
+        	return (usersNoCommas);
+	    }
+	    
+	    
 	    public static void main(String[] args) {
 	        // Command-line argument parsing is provided. Do not change this method
 	        int port = 4444; // default port

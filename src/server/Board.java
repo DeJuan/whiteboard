@@ -3,6 +3,8 @@ package server;
 import java.awt.Color;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import canvas.Brushstroke;
 
@@ -15,7 +17,7 @@ public class Board
 	 * We should create a Board class which contains an ArrayList of strokes, a list of users, and a canvas. 
 	 */
 	private int ID;
-	private ArrayList<Brushstroke> listOfStrokes = new ArrayList<Brushstroke>();
+	private List<Brushstroke> listOfStrokes =  Collections.synchronizedList(new ArrayList<Brushstroke>());
 	private ArrayList<Socket> userList = new ArrayList<Socket>();
 	
 	public Board(int identification)
