@@ -9,7 +9,7 @@ import java.util.*;
 public class Server 
 {
 	
-	private ArrayList<Board> listOfBoards;
+	private ArrayList<Board> listOfBoards = new ArrayList<Board>();
 	private Map<Integer, ArrayList<String>> userInfo;
 	public BlockingQueue<String> queue;
 	private ServerSocket serverSocket;
