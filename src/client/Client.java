@@ -31,10 +31,11 @@ public class Client {
 		this.port = port;
 		this.username=username;
 		this.boardNumber= boardNumber;
-		this.ourCanvas= new newCanvas(500,800);
+		this.ourCanvas= new newCanvas(500,800,this);
 		this.socket= new Socket(this.address, this.port);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.listen();
         this.join(boardNumber);
         this.requestUserList();
 	}
@@ -44,13 +45,11 @@ public class Client {
 
 
 	/*
-	 * 
+	 * Listen() is used to start a new ClientThread to listen to the server.
 	 */
 	public void listen() throws IOException{
-		String inputLine;
-		while((inputLine=in.readLine())!=null) {
-            handleResponses(inputLine);
-		}
+		ClientThread thr = new ClientThread(this.in, this);
+		thr.run();
 	}
 	/*
 	 * handleResponses is called on incoming strings from the server. It tokenizes the given string,
@@ -75,7 +74,7 @@ public class Client {
 			for (int i =1; i<tokens.length; i++){
 				newUserList.add(tokens[i]);
 			}
-			this.users =newUserList;
+			this.users = newUserList;
 			
 			//TODO: update GUI's user list at this point.
 		}
@@ -85,6 +84,13 @@ public class Client {
 		}
 	}
 	
+	/*
+	 * translateBrushstroke() takes a brushstroke and returns a properly formatted string
+	 * as per our protocol.
+	 */
+	public String translateBrushstroke(Brushstroke b){
+		return "brushstroke " + b.toString() + " " + this.boardNumber;
+	}
 	/*
 	 * send will send the given string to the server.
 	 * @param request - a properly formatted request string, as per the protocol.
@@ -97,21 +103,21 @@ public class Client {
 	 * join takes a boardID and sends a properly formatted joinBoard request to the server
 	 */
 	public void join(int boardID){
-		String request = "joinBoard " + boardID;
+		String request = "joinBoard " + username + " "+ boardID;
 		this.send(request);
 	}
 	/*
 	 * change is used to send a changeBoard message to the server
 	 */
 	public void change(int boardID){
-		String request = "changeBoard " + this.boardNumber + " " + boardID;
+		String request = "changeBoard " + username + " " + this.boardNumber + " " + boardID;
 		this.send(request);
 	}
 	/*
 	 * exit is used to send an exitBoard message to the server.
 	 */
 	public void exit(){
-		this.send("exitBoard "+ this.boardNumber);
+		this.send("exitBoard "+ username + " " + this.boardNumber);
 		//TODO: deal with switching the socket
 	}
 	

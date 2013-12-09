@@ -17,6 +17,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import client.Client;
+
 
 
 
@@ -39,6 +41,7 @@ public class newCanvas extends JPanel{
     private Color currentPenColor = Color.black;
     private JColorChooser palette = new JColorChooser(Color.black);
     
+    private Client client;
     
     
     /**
@@ -46,8 +49,9 @@ public class newCanvas extends JPanel{
      * @param width width in pixels
      * @param height height in pixels
      */
-    public newCanvas(int width, int height) 
+    public newCanvas(int width, int height, Client client) 
     {
+    	this.client = client;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
         addEraserController();
@@ -205,6 +209,12 @@ public class newCanvas extends JPanel{
     	addMouseListener(eraser);
     	addMouseMotionListener(eraser);
     }
+    /*
+     * sendStroke calls the clients send methods to send a stroke to the server.
+     */
+    private void sendStroke(Brushstroke b){
+    	this.client.send(this.client.translateBrushstroke(b));
+    }
     
     /*
      * DrawingController handles the user's freehand drawing.
@@ -246,7 +256,7 @@ public class newCanvas extends JPanel{
             	penSize = 1;
             }
             Brushstroke currentStroke = new Brushstroke(lastX, lastY, x, y, currentPenColor, penSize);
-            drawLineSegment(currentStroke);
+            sendStroke(currentStroke);
             lastX = x;
             lastY = y;
         	}
@@ -430,7 +440,7 @@ public class newCanvas extends JPanel{
                 JFrame window = new JFrame("Freehand Canvas");
                 window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 window.setLayout(new BorderLayout());
-                newCanvas canvas = new newCanvas(800, 600);
+                newCanvas canvas = new newCanvas(800, 600, null);
                 window.add(canvas, BorderLayout.CENTER);
                 window.pack();
                 window.setVisible(true);
