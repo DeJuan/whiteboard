@@ -30,8 +30,7 @@ public class Client {
 	private PrintWriter out;
 	private Socket socket;
 	public ArrayList<String> users;
-	public Boolean ready = false;
-	public ArrayList<String> holder = new ArrayList<String>();
+	
 	
 	public Client(String address, int port, String username, int boardNumber) throws IOException{
 		this.address = address;
@@ -54,11 +53,11 @@ public class Client {
         
         System.out.println("About to listen");
         this.listen();
-        try{
-        	Thread.sleep(1000);
-        }catch(Exception e){
-        	e.printStackTrace();
-        }
+//        try{
+//        	Thread.sleep(1000);
+//        }catch(Exception e){
+//        	e.printStackTrace();
+//        }
         this.join(boardNumber);
         this.getAllBrushstrokes();
         
@@ -75,8 +74,14 @@ public class Client {
 
 			@Override
             public void run() {
+				try{
+		        	Thread.sleep(1000);
+		        }catch(Exception e){
+		        	e.printStackTrace();
+		        }
 				try {
 					for (String line =in.readLine(); line!=null; line=in.readLine()) {
+						System.out.println(line);
 			            handleResponses(line);
 			        }
 		        } catch (IOException e) {
@@ -94,31 +99,29 @@ public class Client {
 	 * @param response - A response from the server, properly formatted per the protocol.
 	 */
 	public void handleResponses(String response){
-		if (this.ready){
-			String[] tokens = response.split(" ");
-			
-			if (tokens[0].equals("brushstroke")){
-				Brushstroke newStroke = new Brushstroke(
-						Integer.parseInt(tokens[1]), 
-						Integer.parseInt(tokens[2]), 
-						Integer.parseInt(tokens[3]), 
-						Integer.parseInt(tokens[4]), 
-						new Color(Integer.parseInt(tokens[5])), 
-						Integer.parseInt(tokens[6]));
-				ourCanvas.drawLineSegment(newStroke);
+		String[] tokens = response.split(" ");
+		
+		if (tokens[0].equals("brushstroke")){
+			Brushstroke newStroke = new Brushstroke(
+					Integer.parseInt(tokens[1]), 
+					Integer.parseInt(tokens[2]), 
+					Integer.parseInt(tokens[3]), 
+					Integer.parseInt(tokens[4]), 
+					new Color(Integer.parseInt(tokens[5])), 
+					Integer.parseInt(tokens[6]));
+			ourCanvas.drawLineSegment(newStroke);
+		}
+		else if (tokens[0].equals("userList")){
+			ArrayList<String> newUserList = new ArrayList<String>();
+			for (int i =1; i<tokens.length; i++){
+				newUserList.add(tokens[i]);
 			}
-			else if (tokens[0].equals("userList")){
-				ArrayList<String> newUserList = new ArrayList<String>();
-				for (int i =1; i<tokens.length; i++){
-					newUserList.add(tokens[i]);
-				}
-				this.users = newUserList;
-				//this.ourCanvas.getBoardUsers();
-			}
-			else if (tokens[0].equals("Welcome")){}
-			else{
-				throw new RuntimeException("Recieved an improperly formatted string");
-			}
+			this.users = newUserList;
+			//this.ourCanvas.getBoardUsers();
+		}
+		else if (tokens[0].equals("Welcome")){}
+		else{
+			throw new RuntimeException("Recieved an improperly formatted string");
 		}
 	}
 	
@@ -134,7 +137,7 @@ public class Client {
 	 * @param request - a properly formatted request string, as per the protocol.
 	 */
 	public void send(String request){
-		System.out.println(request);
+		//System.out.println(request);
 		this.out.println(request);
 	}
 	
