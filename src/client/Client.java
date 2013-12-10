@@ -2,6 +2,8 @@ package client;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -45,8 +47,40 @@ public class Client {
         
         JFrame window = new JFrame("Freehand Canvas");
 		System.out.println("Check");
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
         window.setLayout(new BorderLayout());
+        window.addWindowListener(new WindowListener(){
+
+			@Override
+            public void windowActivated(WindowEvent arg0) {
+            }
+
+			@Override
+            public void windowClosed(WindowEvent arg0) {
+            }
+
+			@Override
+            public void windowClosing(WindowEvent arg0) {
+	            exit();
+	            
+            }
+
+			@Override
+            public void windowDeactivated(WindowEvent arg0) {
+            }
+
+			@Override
+            public void windowDeiconified(WindowEvent arg0) {
+            }
+
+			@Override
+            public void windowIconified(WindowEvent arg0) {
+            }
+
+			@Override
+            public void windowOpened(WindowEvent arg0){
+            }
+        });
         window.add(ourCanvas, BorderLayout.CENTER);
         window.pack();
         window.setVisible(true);
