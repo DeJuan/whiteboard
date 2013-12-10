@@ -169,11 +169,11 @@ public class Server
 	                {
 	                	if(output.startsWith("brushstroke"))
 	                	{
-	                		System.out.println("brushy detected!!");
+	                		//System.out.println("brushy detected!! It is: " + output);
 	                		ArrayList<Socket> users = this.listOfBoards.get(Integer.parseInt(output.split(" ")[7])).getBoardUsers();
 	                		for(Socket user: users)
 	                		{
-	                			System.out.println("Printing to socket: " + user);
+	                			//System.out.println("Printing to socket: " + user);
 	                			PrintWriter localOut = new PrintWriter(user.getOutputStream(), false);
 	                			localOut.println(output);
 	                			localOut.flush();

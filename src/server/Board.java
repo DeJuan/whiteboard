@@ -38,7 +38,7 @@ public class Board
 		Color sColor = new Color(Integer.parseInt(inp[5]));
 		Brushstroke currentStroke =  new Brushstroke(Integer.valueOf(inp[1]),Integer.valueOf(inp[2]),Integer.valueOf(inp[3]),Integer.valueOf(inp[4]),sColor,Integer.valueOf(inp[6]));
 		this.listOfStrokes.add(currentStroke);
-		return "brushstroke" + currentStroke.toString() + " " + boardNumber;
+		return "brushstroke " + currentStroke.toString() + " " + boardNumber;
 	}
 	public void addUser(Socket newUser)
 	{
