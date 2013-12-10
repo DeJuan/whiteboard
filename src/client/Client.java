@@ -38,7 +38,7 @@ public class Client {
 		this.port = port;
 		this.username=username;
 		this.boardNumber= boardNumber;
-		this.ourCanvas= new newCanvas(500,800,this);
+		this.ourCanvas= new newCanvas(500,800,this,boardNumber);
 		
 		this.socket= new Socket(this.address, this.port);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -213,7 +213,6 @@ public class Client {
 	            System.out.println(adr + " " + p + " " + user + " " + boardNumber);
 	            try {
 	            	box.dispose();
-	            	//new Client("localhost",4444, "joe", 0);
 	                new Client(adr,p, user, Integer.parseInt(boardNumber));
                 } catch (IOException e) {
                 	box.dispose();
