@@ -61,16 +61,19 @@ public class newCanvas extends JPanel{
      * @param height height in pixels
      * @param client to connect with canvas
      */
-    public newCanvas(int width, int height, Client client) 
+    public newCanvas(int width, int height, Client client, int startingBoardNumber) 
     {
     	this.client = client;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
         addEraserController();
-        currentBoard = this.client.getBoardNumber();
+        currentBoard = startingBoardNumber;
         boardMenu = new JMenu("Change Boards");
         usersMenu = new JMenu("Other Users");
         JToolBar toolbar = new JToolBar();
+        
+        //toolbar will display the 3 most recent colors. 
+        //gray orange and pink display until
         RecentColors.add(Color.gray);
         RecentColors.add(Color.orange);
         RecentColors.add(Color.pink);
@@ -682,7 +685,7 @@ public class newCanvas extends JPanel{
                 JFrame window = new JFrame("Freehand Canvas");
                 window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 window.setLayout(new BorderLayout());
-                newCanvas canvas = new newCanvas(800, 600, null);
+                newCanvas canvas = new newCanvas(800, 600, null, 0);
                 window.add(canvas, BorderLayout.CENTER);
                 window.pack();
                 window.setVisible(true);
