@@ -32,18 +32,21 @@ public class Client {
 		this.username=username;
 		this.boardNumber= boardNumber;
 		this.ourCanvas= new newCanvas(500,800,this);
-		this.socket= new Socket(this.address, this.port);
-		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true);
-        
-        
-        JFrame window = new JFrame("Freehand Canvas");
+		
+		JFrame window = new JFrame("Freehand Canvas");
 		System.out.println("Check");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLayout(new BorderLayout());
         window.add(ourCanvas, BorderLayout.CENTER);
         window.pack();
         window.setVisible(true);
+        
+		this.socket= new Socket(this.address, this.port);
+		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new PrintWriter(socket.getOutputStream(), true);
+        
+        
+        
         
         System.out.println("About to listen");
         this.join(boardNumber);
@@ -154,6 +157,7 @@ public class Client {
 	
 	/*
 	 * setBoardNumber is used by the GUI to set the board number when the user changes it.
+	 * @param boardNum - the number of the board you are switching to.
 	 */
 	public void setBoardNumber(int boardNum){
 		if (boardNum<=0 && boardNum > 10){
