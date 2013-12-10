@@ -492,7 +492,7 @@ public class newCanvas extends JPanel{
     	for(int i = 0; i < users.size();i++){
     		//if(users.get(i).getBoardNumber() == currentBoard){
     			output.add(users.get(i));
-    		//}
+    	//}
     	}
     	sameBoardUsers = output;
     	return output;
