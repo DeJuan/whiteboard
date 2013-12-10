@@ -242,10 +242,12 @@ public class Server
 	        String[] tokens = input.split(" ");
 	        if (tokens[0].equals("brushstroke")) //"brushstroke x1 x2 y1 y2 ColorData width boardnum 
 	        {
+	        	synchronized(lock)
+	        	{
 	        	int boardNumber = Integer.parseInt(input.split(" ")[7]);
 	        	Board board = listOfBoards.get(boardNumber);
 	        	return board.registerStroke(input, boardNumber);
-	        	
+	        	}
 	        }
 	        
 	        else if (tokens[0].equals("joinBoard")) //"joinBoard username boardNumber
@@ -299,14 +301,17 @@ public class Server
 	        
 	        else if(tokens[0].equals("getAllBrushstrokes")) //"getAllBrushstrokes boardNumber
 	        {
+	        	
 	        	try 
 	        	{
 	        		int boardNum = Integer.parseInt(tokens[1]);
 	        		List<Brushstroke> allStrokes = this.listOfBoards.get(boardNum).getStrokes();
 	        		PrintWriter temp = new PrintWriter(socket.getOutputStream(), true);
+	        		synchronized(lock){
 	        		for(Brushstroke stroke: allStrokes)
 	        		{
 	        			temp.println("brushstroke " + stroke.toString() + " " + boardNum);
+	        		}
 	        		}
 	        		return null;
 				} 
@@ -339,7 +344,7 @@ public class Server
 	    
 	    
 	    public static void main(String[] args) {
-	        // Command-line argument parsing is provided. Do not change this method
+	        // Command-line argument parsing is provided.
 	        int port = 4444; // default port
 	        int numBoards = 10; // default size of board storage
 
