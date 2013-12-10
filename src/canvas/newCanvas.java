@@ -9,13 +9,18 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.Queue;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import client.Client;
 
 
 
@@ -35,9 +40,13 @@ public class newCanvas extends JPanel{
 	// image where the user's drawing is stored
     private Image drawingBuffer;
     private boolean eraserMode = false;
-    private JTextField strokeWidth;
+    private JSlider strokeWidth;
     private Color currentPenColor = Color.black;
     private JColorChooser palette = new JColorChooser(Color.black);
+    private JMenu boardMenu;
+    private Queue<Color> RecentColors; 
+    private int currentBoard;
+    private int colorButtonSelected = 0;
     
     
     
@@ -46,14 +55,67 @@ public class newCanvas extends JPanel{
      * @param width width in pixels
      * @param height height in pixels
      */
-    public newCanvas(int width, int height) 
+    public newCanvas(int width, int height, Client client) 
     {
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
         addEraserController();
+        currentBoard = client.getBoard();
         
         JToolBar toolbar = new JToolBar();
        
+        JRadioButtonMenuItem board0 = new JRadioButtonMenuItem("Board 0");
+        boardMenu.add(board0);
+        if(currentBoard == 0){
+        	board0.setSelected(true);
+        }	
+        JRadioButtonMenuItem board1 = new JRadioButtonMenuItem("Board 1");
+        boardMenu.add(board1);
+        if(currentBoard == 1){
+        	board1.setSelected(true);
+        }	
+        JRadioButtonMenuItem board2 = new JRadioButtonMenuItem("Board 2");
+        boardMenu.add(board2);
+        if(currentBoard == 2){
+        	board2.setSelected(true);
+        }	
+        JRadioButtonMenuItem board3 = new JRadioButtonMenuItem("Board 3");
+        boardMenu.add(board3);
+        if(currentBoard == 3){
+        	board3.setSelected(true);
+        }	
+        JRadioButtonMenuItem board4 = new JRadioButtonMenuItem("Board 4");
+        boardMenu.add(board4);
+        if(currentBoard == 4){
+        	board4.setSelected(true);
+        }	
+        JRadioButtonMenuItem board5 = new JRadioButtonMenuItem("Board 5");
+        boardMenu.add(board5);
+        if(currentBoard == 5){
+        	board5.setSelected(true);
+        }	
+        JRadioButtonMenuItem board6 = new JRadioButtonMenuItem("Board 6");
+        boardMenu.add(board6);
+        if(currentBoard == 6){
+        	board6.setSelected(true);
+        }	
+        JRadioButtonMenuItem board7 = new JRadioButtonMenuItem("Board 7");
+        boardMenu.add(board7);
+        if(currentBoard == 7){
+        	board7.setSelected(true);
+        }	
+        JRadioButtonMenuItem board8 = new JRadioButtonMenuItem("Board 8");
+        boardMenu.add(board8);
+        if(currentBoard == 8){
+        	board8.setSelected(true);
+        }	
+        JRadioButtonMenuItem board9 = new JRadioButtonMenuItem("Board 9");
+        boardMenu.add(board9);
+        if(currentBoard == 9){
+        	board9.setSelected(true);
+        }	
+        
+        //must still add listener to change to new board when clicked. 
         
         PaletteListener paletteController = new PaletteListener();
         palette.getSelectionModel().addChangeListener(paletteController);
@@ -65,9 +127,70 @@ public class newCanvas extends JPanel{
         JButton resetter = new JButton("Reset All");
         resetter.addMouseListener(new resetListener());
         
+        JButton blue = new JButton();
+        blue.setBackground(Color.blue);
+        blue.setPreferredSize(new Dimension(10, 10));
+        blue.setActionCommand("blue");
+        blue.addActionListener((ActionListener) this);
+        if(colorButtonSelected == 1){
+        	blue.setFocusPainted(true);
+        }
+        else{
+        	blue.setFocusPainted(false);
+        }
+        
+        JButton red = new JButton();
+        red.setBackground(Color.red);
+        red.setPreferredSize(new Dimension(10, 10));
+        red.setActionCommand("red");
+        red.addActionListener((ActionListener) this);
+        if(colorButtonSelected == 2){
+        	red.setFocusPainted(true);
+        }
+        else{
+        	red.setFocusPainted(false);
+        }
+        
+        JButton green = new JButton();
+        green.setBackground(Color.green);
+        green.setPreferredSize(new Dimension(10,10));
+        green.setActionCommand("green");
+        green.addActionListener((ActionListener) this);
+        if(colorButtonSelected == 3){
+        	green.setFocusPainted(true);
+        }
+        else{
+        	green.setFocusPainted(false);
+        }
+        
+        JButton black = new JButton();
+        black.setBackground(Color.black);
+        black.setPreferredSize(new Dimension(10,10));
+        black.setActionCommand("black");
+        black.addActionListener((ActionListener) this);
+        if(colorButtonSelected == 4){
+        	black.setFocusPainted(true);
+        	currentPenColor = Color.black;
+        }
+        else{
+        	black.setFocusPainted(false);
+        }
+        
+        JButton yellow = new JButton();
+        yellow.setBackground(Color.yellow);
+        yellow.setPreferredSize(new Dimension(10,10));
+        yellow.setActionCommand("yellow");
+        yellow.addActionListener((ActionListener) this);
+        if(colorButtonSelected == 5){
+        	yellow.setFocusPainted(true);
+        }
+        else{
+        	yellow.setFocusPainted(false);
+        }
+        
         JLabel widthLabel = new JLabel("Pen Size");
-        strokeWidth = new JTextField("1");
-        strokeWidth.setPreferredSize(new Dimension(40,20));
+        strokeWidth = new JSlider(JSlider.HORIZONTAL,1,50,1);
+        strokeWidth.setPreferredSize(new Dimension(100,20));
         
         JToggleButton DrawOrErase = new JToggleButton("Eraser Mode",false);
         DrawOrErase.addMouseListener(new eraseButtonListener());
@@ -76,6 +199,7 @@ public class newCanvas extends JPanel{
         toolbar.add(widthLabel);
         toolbar.add(strokeWidth);
         toolbar.add(resetter);
+        toolbar.add(boardMenu);
         add(toolbar);
         //Make the buttons, add the mouse listener to them, and add the buttons to the canvas.
         
@@ -237,14 +361,7 @@ public class newCanvas extends JPanel{
         	{
             int x = e.getX();
             int y = e.getY();
-            String penSizeStr = strokeWidth.getText();
-            int penSize;
-            try{
-            	penSize = Integer.parseInt(penSizeStr);
-            }
-            catch(Exception ex){
-            	penSize = 1;
-            }
+            int penSize = strokeWidth.getValue();            
             Brushstroke currentStroke = new Brushstroke(lastX, lastY, x, y, currentPenColor, penSize);
             drawLineSegment(currentStroke);
             lastX = x;
@@ -260,7 +377,7 @@ public class newCanvas extends JPanel{
         public void mouseExited(MouseEvent e) { }
     }
     
-    public static JToggleButton DrawOrErase = new JToggleButton("Currently In Eraser Mode?",false);
+    public static JToggleButton DrawOrErase = new JToggleButton("Eraser",false);
     //DrawOrErase.addMouseListener(new eraseButtonListener());
     
    //Toggles the boolean that controls erasure vs drawing.  
@@ -338,16 +455,11 @@ public class newCanvas extends JPanel{
     		{
     		int x = e.getX();
     		int y = e.getY();
-    		try
-    		{
-    			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, Integer.parseInt(strokeWidth.getText()));
-    			eraserLineSegment(eraser);
-    		}
-    		catch(Exception notaNum)
-    		{
-    			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, 1);
-    			eraserLineSegment(eraser);
-    		}
+    		
+    		//made eraser width be controlled by slider
+    		Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, (Integer)strokeWidth.getValue());
+    		eraserLineSegment(eraser);
+    		
     		
     		startingX = x;
     		startingY = y;
@@ -370,6 +482,28 @@ public class newCanvas extends JPanel{
 			
 		}
     	
+    }
+    
+    public void actionPerformed(ActionEvent e){
+    	if("blue".equals(e.getActionCommand())){
+    		colorButtonSelected = 1;
+    		currentPenColor = Color.blue;
+    	}
+    	else if("red".equals(e.getActionCommand())){
+    		colorButtonSelected = 2;
+    		currentPenColor = Color.red;
+    	}
+    	else if("green".equals(e.getActionCommand())){
+    		colorButtonSelected = 3;
+    		currentPenColor = Color.green;
+    	}
+    	else if("black".equals(e.getActionCommand())){
+    		colorButtonSelected = 4;
+    		currentPenColor = Color.black;
+    	}
+    	else if("yellow".equals(e.getActionCommand())){
+    		colorButtonSelected = 5;
+    		currentPenColor = Color.yellow;
     }
     
     public class PalettePopupListener implements MouseListener{
