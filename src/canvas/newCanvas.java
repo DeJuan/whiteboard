@@ -35,7 +35,7 @@ import client.Client;
  * I then change the current pen color to the returned color from the dialog.
  * @author DeJuan 
  */
-public class newCanvas extends JPanel{
+public class newCanvas extends JPanel implements ActionListener{
     
 	private static final long serialVersionUID = 1L;
 	// image where the user's drawing is stored
@@ -45,7 +45,7 @@ public class newCanvas extends JPanel{
     private Color currentPenColor = Color.black;
     private JColorChooser palette = new JColorChooser(Color.black);
     private JMenu boardMenu;
-    private ArrayList<Color> RecentColors; 
+    private ArrayList<Color> RecentColors = new ArrayList<Color>(); 
     private int currentBoard;
     private int colorButtonSelected = 0;
     private ArrayList<String> users;
@@ -74,6 +74,7 @@ public class newCanvas extends JPanel{
         
         //toolbar will display the 3 most recent colors. 
         //gray orange and pink display until
+        RecentColors.add(Color.magenta);
         RecentColors.add(Color.gray);
         RecentColors.add(Color.orange);
         RecentColors.add(Color.pink);
@@ -155,7 +156,7 @@ public class newCanvas extends JPanel{
         blue.setBackground(Color.blue);
         blue.setPreferredSize(new Dimension(10, 10));
         blue.setActionCommand("blue");
-        blue.addActionListener((ActionListener) this);
+        blue.addActionListener(this);
         if(colorButtonSelected == 1){
         	blue.setFocusPainted(true);
         }
@@ -167,7 +168,7 @@ public class newCanvas extends JPanel{
         red.setBackground(Color.red);
         red.setPreferredSize(new Dimension(10, 10));
         red.setActionCommand("red");
-        red.addActionListener((ActionListener) this);
+        red.addActionListener(this);
         if(colorButtonSelected == 2){
         	red.setFocusPainted(true);
         }
@@ -179,7 +180,7 @@ public class newCanvas extends JPanel{
         green.setBackground(Color.green);
         green.setPreferredSize(new Dimension(10,10));
         green.setActionCommand("green");
-        green.addActionListener((ActionListener) this);
+        green.addActionListener(this);
         if(colorButtonSelected == 3){
         	green.setFocusPainted(true);
         }
@@ -191,7 +192,7 @@ public class newCanvas extends JPanel{
         black.setBackground(Color.black);
         black.setPreferredSize(new Dimension(10,10));
         black.setActionCommand("black");
-        black.addActionListener((ActionListener) this);
+        black.addActionListener(this);
         if(colorButtonSelected == 4){
         	black.setFocusPainted(true);
         	currentPenColor = Color.black;
@@ -204,7 +205,7 @@ public class newCanvas extends JPanel{
         yellow.setBackground(Color.yellow);
         yellow.setPreferredSize(new Dimension(10,10));
         yellow.setActionCommand("yellow");
-        yellow.addActionListener((ActionListener) this);
+        yellow.addActionListener(this);
         if(colorButtonSelected == 5){
         	yellow.setFocusPainted(true);
         }
@@ -216,7 +217,7 @@ public class newCanvas extends JPanel{
         recent1.setBackground(RecentColors.get(1));
         recent1.setPreferredSize(new Dimension(10,10));
         recent1.setActionCommand("recent1");
-        recent1.addActionListener((ActionListener) this);
+        recent1.addActionListener(this);
         if(colorButtonSelected == 6){
         	
         }
@@ -225,13 +226,13 @@ public class newCanvas extends JPanel{
         recent2.setBackground(RecentColors.get(2));
         recent2.setPreferredSize(new Dimension(10,10));
         recent2.setActionCommand("recent2");
-        recent2.addActionListener((ActionListener) this);
+        recent2.addActionListener(this);
         
         JButton recent3 = new JButton();
         recent3.setBackground(RecentColors.get(3));
         recent3.setPreferredSize(new Dimension(10,10));
         recent3.setActionCommand("recent3");
-        recent3.addActionListener((ActionListener) this);
+        recent3.addActionListener(this);
         
         JLabel widthLabel = new JLabel("Pen Size");
         strokeWidth = new JSlider(JSlider.HORIZONTAL,1,50,1);
@@ -427,7 +428,7 @@ public class newCanvas extends JPanel{
             int y = e.getY();
             int penSize = strokeWidth.getValue();            
             Brushstroke currentStroke = new Brushstroke(lastX, lastY, x, y, currentPenColor, penSize);
-            drawLineSegment(currentStroke);
+            sendStroke(currentStroke);
             lastX = x;
             lastY = y;
         	}
@@ -531,18 +532,18 @@ public class newCanvas extends JPanel{
     		{
     		int x = e.getX();
     		int y = e.getY();
-    		try
-    		{
+    		//try
+    		//{
     		//made eraser width be controlled by slider
     		Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, (Integer)strokeWidth.getValue());
     		sendStroke(eraser);
     		
-    		}
+    		/*}
     		catch(Exception notaNum)
     		{
     			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, 1);
     			sendStroke(eraser);
-    		}
+    		*/
 
     		
     		startingX = x;

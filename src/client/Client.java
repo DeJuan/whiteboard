@@ -38,7 +38,7 @@ public class Client {
 		this.port = port;
 		this.username=username;
 		this.boardNumber= boardNumber;
-		this.ourCanvas= new newCanvas(500,800,this);
+		this.ourCanvas= new newCanvas(500,800,this,boardNumber);
 		
 		this.socket= new Socket(this.address, this.port);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
