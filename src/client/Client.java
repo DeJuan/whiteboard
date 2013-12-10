@@ -24,7 +24,7 @@ public class Client {
 	private BufferedReader in;
 	private PrintWriter out;
 	private Socket socket;
-	private ArrayList<String> users;
+	public ArrayList<String> users;
 	
 	public Client(String address, int port, String username, int boardNumber) throws IOException{
 		this.address = address;
@@ -32,20 +32,23 @@ public class Client {
 		this.username=username;
 		this.boardNumber= boardNumber;
 		this.ourCanvas= new newCanvas(500,800,this);
-		JFrame window = new JFrame("Freehand Canvas");
+		this.socket= new Socket(this.address, this.port);
+		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new PrintWriter(socket.getOutputStream(), true);
+        
+        
+        JFrame window = new JFrame("Freehand Canvas");
 		System.out.println("Check");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLayout(new BorderLayout());
         window.add(ourCanvas, BorderLayout.CENTER);
         window.pack();
         window.setVisible(true);
-//		ourCanvas.setVisible(true);
-		this.socket= new Socket(this.address, this.port);
-		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true);
+        
         System.out.println("About to listen");
-        this.listen();
         this.join(boardNumber);
+        this.listen();
+        
 	}
 	
 	
@@ -55,8 +58,22 @@ public class Client {
 	 * Listen() is used to start a new ClientThread to listen to the server.
 	 */
 	public void listen() throws IOException{
-		ClientThread thr = new ClientThread(this.in, this);
-		thr.run();
+		Thread thr = new Thread(new Runnable(){
+
+			@Override
+            public void run() {
+				try {
+					for (String line =in.readLine(); line!=null; line=in.readLine()) {
+			            handleResponses(line);
+			        }
+		        } catch (IOException e) {
+			        e.printStackTrace();
+		        }
+	            
+            }
+		}
+		);
+		thr.start();
 	}
 	/*
 	 * handleResponses is called on incoming strings from the server. It tokenizes the given string,
@@ -103,7 +120,8 @@ public class Client {
 	 * @param request - a properly formatted request string, as per the protocol.
 	 */
 	public void send(String request){
-		this.out.print(request);
+		System.out.println(request);
+		this.out.println(request);
 	}
 	
 	/*
@@ -173,14 +191,15 @@ public class Client {
 
 			@Override
             public void actionPerformed(ActionEvent ae) {
-	            //String adr = address.getText();
-	            //int p = Integer.parseInt(port.getText());
-	            //String user = username.getText();
-	            //String boardNumber = boards.getSelectedItem().toString();
+	            String adr = address.getText();
+	            int p = Integer.parseInt(port.getText());
+	            String user = username.getText();
+	            String boardNumber = boards.getSelectedItem().toString();
+	            System.out.println(adr + " " + p + " " + user + " " + boardNumber);
 	            try {
 	            	box.dispose();
-	            	new Client("localhost",4444, "joe", 0);
-	                //new Client(adr,p, user, Integer.parseInt(boardNumber));
+	            	//new Client("localhost",4444, "joe", 0);
+	                new Client(adr,p, user, Integer.parseInt(boardNumber));
                 } catch (IOException e) {
                 	box.dispose();
 	                e.printStackTrace();
