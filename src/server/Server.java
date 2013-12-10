@@ -55,10 +55,11 @@ public class Server
 			userSocketToUsername.put(socket, userName);
 			usernameToBoardNumber.put(userName, desiredBoard);
 			List<Brushstroke> allStrokes = listOfBoards.get(desiredBoard).getStrokes();
-			PrintWriter output = new PrintWriter(socket.getOutputStream(), false);
+			System.out.println(allStrokes.toString());
+			PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
 			for(Brushstroke stroke: allStrokes)
 			{
-				output.println("brushstroke " + stroke.toString() +" " + desiredBoard);
+				output.println("brushstroke " + stroke.toString() + " " + desiredBoard);
 			}
 			
 		}
