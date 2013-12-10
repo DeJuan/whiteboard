@@ -490,9 +490,9 @@ public class newCanvas extends JPanel{
     	ArrayList<String> output = new ArrayList<String>();
     	//can't call get board number on users other than this
     	for(int i = 0; i < users.size();i++){
-    		if(users.get(i).getBoardNumber() == currentBoard){
+    		//if(users.get(i).getBoardNumber() == currentBoard){
     			output.add(users.get(i));
-    		}
+    		//}
     	}
     	sameBoardUsers = output;
     	return output;
