@@ -351,12 +351,12 @@ public class newCanvas extends JPanel{
     		try
     		{
     			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, Integer.parseInt(strokeWidth.getText()));
-    			eraserLineSegment(eraser);
+    			sendStroke(eraser);
     		}
     		catch(Exception notaNum)
     		{
     			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, 1);
-    			eraserLineSegment(eraser);
+    			sendStroke(eraser);
     		}
     		
     		startingX = x;

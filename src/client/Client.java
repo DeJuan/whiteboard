@@ -99,8 +99,7 @@ public class Client {
 				newUserList.add(tokens[i]);
 			}
 			this.users = newUserList;
-			
-			//TODO: update GUI's user list at this point.
+			//this.ourCanvas.getBoardUsers();
 		}
 		else if (tokens[0].equals("Welcome")){}
 		else{
