@@ -198,7 +198,7 @@ public class Client {
 		final JTextField username = new JTextField();
 		JLabel boardNumLabel = new JLabel("Board #");
 		String[] boardsArray = {"0", "1", "2","3","4","5","6","7","8","9"};
-		final JComboBox<String> boards = new JComboBox<String>(boardsArray);
+		final JComboBox boards = new JComboBox(boardsArray);
 		boards.setSelectedIndex(0);
 		JButton go = new JButton("Start!");
 		
