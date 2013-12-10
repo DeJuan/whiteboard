@@ -15,6 +15,19 @@ import canvas.Brushstroke;
  * However, the boardCount is fixed at 10 for our implementation. In the interest of being ready for change,
  * I have left this as a potentially variable amount.  
  * 
+ * 
+ * The argument for concurrency has two main points. The first is that we need to make sure that new users 
+ * have a state that matches the state of the board. To ensure this, whenever a new user connects, 
+ * we synchronize on our lock object while the iterator goes through the list of strokes and updates the newbie.
+ * Once the update is completed, we release the lock and all changes made during the lock period are then processed and simultaneously
+ * updated to all users. 
+ * 
+ * Second, drawing at the same time once connections have been established.  This is done by making sure each stroke is added to a synchronizedList for each individual board,
+ * which has a synchronization on each action. This ensures that two strokes can never occur at the exact same time, as they'll be offset by the synchronization. 
+ * We executed real-time testing on this system and it does properly resolve strokes in the order they were made. For example, one person chose an eraser then the other chose a color, and
+ * we chased each other, with the one behind gaining speed and eventually overlapping then overtaking the other. The behavior was exactly as expected; When they overlap, the one who moves off
+ * the point in space last gets the overwrite. This is as expected; if you erase and I draw right behind you, my drawing should appear and not be erased.
+ *  
  * @param port
  * @param boardCount
  * @throws IOException
