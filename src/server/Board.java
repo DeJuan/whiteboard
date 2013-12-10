@@ -25,10 +25,10 @@ public class Board
 		this.ID = identification;
 	}
 	
-	public void registerStroke(Brushstroke stroke, int boardNumber)
+	public String registerStroke(Brushstroke stroke, int boardNumber)
 	{
 		this.listOfStrokes.add(stroke);
-		updateUsers(stroke, boardNumber);
+		return "brushstroke " + stroke.toString() +" " + boardNumber;
 	}
 	
 	public String registerStroke(String stroke, int boardNumber)
@@ -38,7 +38,7 @@ public class Board
 		Color sColor = new Color(Integer.parseInt(inp[5]));
 		Brushstroke currentStroke =  new Brushstroke(Integer.valueOf(inp[1]),Integer.valueOf(inp[2]),Integer.valueOf(inp[3]),Integer.valueOf(inp[4]),sColor,Integer.valueOf(inp[6]));
 		this.listOfStrokes.add(currentStroke);
-		return updateUsers(currentStroke, boardNumber);
+		return "brushstroke" + currentStroke.toString() + " " + boardNumber;
 	}
 	public void addUser(Socket newUser)
 	{
@@ -50,9 +50,9 @@ public class Board
 		this.userList.remove(oldUser);
 	}
 	
-	public String updateUsers(Brushstroke stroke, int boardNumber)
+	public List<Brushstroke> getStrokes()
 	{	
-		return "brushstroke " + stroke.toString() +" " + boardNumber;
+		return this.listOfStrokes;
 	}
 	
 	public int retrieveID()
