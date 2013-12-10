@@ -48,6 +48,7 @@ public class newCanvas extends JPanel{
     private int currentBoard;
     private int colorButtonSelected = 0;
     
+    private Client client;
     
     
     /**
@@ -57,6 +58,7 @@ public class newCanvas extends JPanel{
      */
     public newCanvas(int width, int height, Client client) 
     {
+    	this.client = client;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
         addEraserController();
@@ -329,6 +331,12 @@ public class newCanvas extends JPanel{
     	addMouseListener(eraser);
     	addMouseMotionListener(eraser);
     }
+    /*
+     * sendStroke calls the clients send methods to send a stroke to the server.
+     */
+    private void sendStroke(Brushstroke b){
+    	this.client.send(this.client.translateBrushstroke(b));
+    }
     
     /*
      * DrawingController handles the user's freehand drawing.
@@ -363,7 +371,7 @@ public class newCanvas extends JPanel{
             int y = e.getY();
             int penSize = strokeWidth.getValue();            
             Brushstroke currentStroke = new Brushstroke(lastX, lastY, x, y, currentPenColor, penSize);
-            drawLineSegment(currentStroke);
+            sendStroke(currentStroke);
             lastX = x;
             lastY = y;
         	}
@@ -564,7 +572,7 @@ public class newCanvas extends JPanel{
                 JFrame window = new JFrame("Freehand Canvas");
                 window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 window.setLayout(new BorderLayout());
-                newCanvas canvas = new newCanvas(800, 600);
+                newCanvas canvas = new newCanvas(800, 600, null);
                 window.add(canvas, BorderLayout.CENTER);
                 window.pack();
                 window.setVisible(true);

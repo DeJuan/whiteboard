@@ -9,17 +9,18 @@ import java.util.*;
 public class Server 
 {
 	
-	private ArrayList<Board> listOfBoards;
-	private ArrayList<String> userInfo;
-	public BlockingQueue queue;
-	private final ServerSocket serverSocket;
+	private ArrayList<Board> listOfBoards = new ArrayList<Board>();
+	private Map<Integer, ArrayList<String>> userInfo = new HashMap<Integer, ArrayList<String>>();
+	public BlockingQueue<String> queue;
+	private ServerSocket serverSocket;
 	private Object lock = new Object(); //Made so that I don't lock on the class if I need to synchro something. 
 	
-	public Server(int port, int boardCount)
+	public Server(int port, int boardCount) throws IOException
 	{
 		for(int i = 0; i < boardCount; i++)
 		{
 			listOfBoards.add(new Board(i));
+			userInfo.put(i, new ArrayList<String>());
 		}
 		try 
 		{
@@ -27,27 +28,37 @@ public class Server
 		} 
 		catch (IOException e) 
 		{
-			System.out.println("Port was invalid. Should never see this thanks to previous checks but Java didn't like this. ");
-			e.printStackTrace();
+			System.out.println("Port was invalid. Should never see this thanks to previous checks, but now defaulting to  port 4444. ");
+			serverSocket = new ServerSocket(4444);
 		}
 	}
 	
-	public void addNewUserToBoard(String userName, int desiredBoard)
+	public void addNewUserToBoard(String userName, int desiredBoard) throws Exception
 	{
 		//called from a new socket, initializing a user's info to point to the board we need. May need synchronization.
-		
+		ArrayList<String> potentialBoard = this.userInfo.get(desiredBoard);
+		System.out.println("Obtained Desired Board: It is currently" + potentialBoard.toString());
+		if (!potentialBoard.contains(userName))
+		{
+			potentialBoard.add(userName);
+		}
+		else //TODO REMEMBER TO TEST USERNAME OVERLAPS. THIS MAY OR MAY NOT CRASH THE ENTIRE SERVER!!!!!!
+		{
+			throw new Exception("That user name is already taken. Please choose another.");
+		}
 	}
 		
 	public void removeUserFromBoard(String userName, int currentBoard)
 	{
-		//Called when a user leaves the board and before they close their socket; want to remove their data. May not actually be needed. 
+		//Called when a user leaves the board and before they close their socket; want to remove their data. May not actually be needed.
+		userInfo.get(currentBoard).remove(userName);
 	}
-	
+	/*
 	private void addMessageToQueue(String message)
 	{
 		queue.add(message); //TODO Be careful about leaving it like this, depends on what the messages are. 
 	}
-
+	*/
 	
 	 
 	    
@@ -71,7 +82,9 @@ public class Server
 	            		{
 	            			//addNewUserToBoard(); //TODO need to figure out how to get the index of the desired board in here. If we get that, we're done.
 	            			//That's the main problem of this section.
-	                        handleConnection(socket, alsoProbablyBoardID); //TODO add more info that needs to be passed here
+	            			//UPDATE: Don't worry about that here. Do it later in actually handling requests.
+	            			System.out.println("Reached serve's try");
+	                        handleConnection(socket); //TODO add more info that needs to be passed here
 	                    } 
 	            		catch (IOException e) 
 	                    {
@@ -82,7 +95,7 @@ public class Server
 	                        try 
 	                        {
 								socket.close();
-								removeUserFromBoard();
+								//removeUserFromBoard();
 							} 
 	                        catch (IOException e) 
 							{
@@ -108,18 +121,21 @@ public class Server
 	     * @param socket socket where the client is connected
 	     * @throws IOException if connection has an error or terminates unexpectedly
 	     */
-	    private void handleConnection(Socket socket, Information info) throws IOException {
+	    private void handleConnection(Socket socket) throws IOException {
 	        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-	        out.println("Welcome");
+	        out.println("Welcome to the whiteboard command center.");
 	        try 
 	        {
 	            for (String line = in.readLine(); line != null; line = in.readLine()) //Need to discuss how these are going to be sent. 
 	            {
-	                String output = handleRequest(line, boardNumber);  //Need to specify ahead of time which board we're adjusting. Just send the int, handle request will get the board out.  
-	                if (output != null) 
+	            	System.out.println("Succeeded in making in and out, and am about to call handleRequest");
+	                String output = handleRequest(line);  //Need to specify ahead of time which board we're adjusting. Just send the int, handle request will get the board out.  
+	                if (output != null && output != "Disconnect") 
 	                {
 	                    out.println(output);
+	                    out.flush();
+	                    
 	                    if( output == "Disconnect") //write listener code for DCing from a board and send this as output.
 	                    {
 	                    	socket.close(); 
@@ -140,20 +156,82 @@ public class Server
 	     * @param input message from client
 	     * @return message to client
 	     */
-	    private void handleRequest(String input, int boardNumber) {
-	    	Board board = listOfBoards.get(boardNumber);
+	    private String handleRequest(String input) {
+	    	
 	        String[] tokens = input.split(" ");
-	        if (tokens[0].equals("brushstroke")) 
-	        {   
-	           board.registerStroke(input);
+	        if (tokens[0].equals("brushstroke")) //"brushstroke x1 x2 y1 y2 ColorData width boardnum 
+	        {
+	        	int boardNumber = Integer.parseInt(input.split(" ")[7]);
+	        	Board board = listOfBoards.get(boardNumber);
+	        	return board.registerStroke(input);
+	        }
+	        
+	        else if (tokens[0].equals("joinBoard")) //"joinBoard username boardNumber
+	        {
+	        	try {
+	        			int boardNum = Integer.parseInt(tokens[2]);
+						addNewUserToBoard(tokens[1], boardNum);
+						return userListParser(boardNum);
+					}  
+	        	catch (Exception e) 
+	        		{
+					// TODO Auto-generated catch block with stand-in notification code. May need reworking. 
+					System.out.println("Failed to add user to board.");
+	        		}
 	        }
 	         
+	        else if (tokens[0].equals("exitBoard")) //"exitBoard username currentBoard
+	        {
+	        	int boardNum = Integer.parseInt(tokens[2]);
+	        	removeUserFromBoard(tokens[1], boardNum);
+	        	return userListParser(boardNum);
+	        }
+	        /*
+	        else if (tokens[0].equals("changeBoard"))//"changeBoard username currentBoard newBoard 
+	        	//TODO We have an issue with returning things here. May need to remove this. 
+	        {
+	        	try 
+	        	{
+	        		removeUserFromBoard(tokens[1], Integer.parseInt(tokens[2]));
+					addNewUserToBoard(tokens[1], Integer.parseInt(tokens[3]));
+					return null;
+				} 
+	        	
+	        	catch (Exception e) 
+				{
+					// TODO Auto-generated catch block
+					System.out.println("Transfer Failed.");
+				}
+	        }
+	        */
+	        else if(tokens[0].equals("getUserList")) //"getUserList boardNumber
+	        {
+	        	return userListParser(Integer.parseInt(tokens[1]));
+	        }
 	        
-	        // Should never get here--make sure to return in each of the valid cases above.
-	        throw new UnsupportedOperationException();
+	        else if(tokens[0].equals("exit") || tokens[0].equals("quit") ||  tokens[0].equals("bye") || tokens[0].equals("dc") ||tokens[0].equals("disconnect"))
+	        {
+	        	return "Disconnect";
+	        }
+	        else
+	        {
+	        	// Should never get here--make sure to return in each of the valid cases above.
+		        return null;
+	        }
+			
+	        return "Disconnect";
 	    }
 
-
+	    public String userListParser(int boardNum)
+	    {
+	    	ArrayList<String> users = userInfo.get(boardNum);
+        	String usersInString = users.toString();
+        	String usersNoBrackets = usersInString.substring(1, usersInString.length()-1);
+        	String usersNoCommas = usersNoBrackets.replace(",", "");
+        	return (usersNoCommas);
+	    }
+	    
+	    
 	    public static void main(String[] args) {
 	        // Command-line argument parsing is provided. Do not change this method
 	        int port = 4444; // default port
