@@ -97,7 +97,7 @@ public class Server
 		
 	/**
 	 * This method is called when a user disconnects from the server. It uses their socket to retrieve all of the information we stored
-	 * regarding this users, and then removes all of it before finally 
+	 * regarding this users, and then removes all of it. 
 	 * @param socket
 	 * @throws Exception
 	 */
@@ -125,7 +125,8 @@ public class Server
 	   /**
 	     * Run the server, listening for client connections and handling them.
 	     * Never returns unless an exception is thrown.
-	     * Main issue here: How to get desired board information?
+	     * It uses string parsing; client messages are specially structured strings starting with a keyword
+	     * that determine the behavior desired, followed by any necessary parameters, all separated by a single whitespace. 
 	     * 
 	     * @throws IOException if the main server socket is broken
 	     *                     (IOExceptions from individual clients do *not* terminate serve())
@@ -140,14 +141,12 @@ public class Server
 	            	{
 	            		try 
 	            		{
-	            			//addNewUserToBoard(); //TODO need to figure out how to get the index of the desired board in here. If we get that, we're done.
-	            			//That's the main problem of this section.
-	            			//UPDATE: Don't worry about that here. Do it later in actually handling requests.
-	                        handleConnection(socket); //TODO add more info that needs to be passed here
+	            			
+	                        handleConnection(socket); 
 	                    } 
 	            		catch (Exception e) 
 	                    {
-	                        e.printStackTrace(); // Doesn't stop the service. May change once earlier TODO has been taken care of. 
+	                        e.printStackTrace();  
 	                    } 
 	            		finally 
 	                    {
@@ -173,11 +172,12 @@ public class Server
 	    
 
 	    /**
-	     * Handle a single client connection. Returns when client disconnects.
-	     * Information is just a place holder to remind us we need to put things there.
-	     * Discuss with group on Sunday.  
-	     * 
-	     * @param socket socket where the client is connected
+	     * Handle a single client connection. Stops when client disconnects.
+	     * Only takes in the socket of the user. Throws an exception if something goes wrong.   
+	     * This actually does print things; however, it does this not to itself but
+	     * through an instance of a PrintWriter made from the socket's output stream. 
+	     *  
+	     * @param socket, the socket where the client is connected
 	     * @throws Exception 
 	     */
 	    private void handleConnection(Socket socket) throws Exception {
@@ -311,7 +311,6 @@ public class Server
 				} 
 	        	catch (IOException e) 
 	        	{
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 	        }
@@ -385,19 +384,14 @@ public class Server
 	    }
 
 	    /**
-	     * Start a MinesweeperServer running on the specified port, with either a random new board or a
-	     * board loaded from a file. Either the file or the size argument must be null, but not both.
+	     * Start a Server running on the specified port, with the specified number of boards. Currently set up for 10. 
 	     * 
-	     * @param debug The server should disconnect a client after a BOOM message if and only if this
-	     *              argument is false.
-	     * @param size If this argument is not null, start with a random board of size size * size.
-	     * @param file If this argument is not null, start with a board loaded from the specified file,
-	     *             according to the input file format defined in the JavaDoc for main().
+	     * @param numBoards If this argument is not null, start with a Server containing that number of Boards.
 	     * @param port The network port on which the server should listen.
 	     */
 	    public static void runServer(int numBoards, int port) throws IOException {
 	        
-	        // TODO: Continue your implementation here.
+	        
 	        
 	        Server server = new Server(port, numBoards);
 	        server.serve();
