@@ -24,7 +24,7 @@ public class Client {
 	private BufferedReader in;
 	private PrintWriter out;
 	private Socket socket;
-	private ArrayList<String> users;
+	public ArrayList<String> users;
 	
 	public Client(String address, int port, String username, int boardNumber) throws IOException{
 		this.address = address;
@@ -32,24 +32,51 @@ public class Client {
 		this.username=username;
 		this.boardNumber= boardNumber;
 		this.ourCanvas= new newCanvas(500,800,this);
+		
+		JFrame window = new JFrame("Freehand Canvas");
+		System.out.println("Check");
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setLayout(new BorderLayout());
+        window.add(ourCanvas, BorderLayout.CENTER);
+        window.pack();
+        window.setVisible(true);
+        
 		this.socket= new Socket(this.address, this.port);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
-        this.listen();
+        
+        
+        
+        
+        System.out.println("About to listen");
         this.join(boardNumber);
-        this.requestUserList();
+        this.listen();
+        
 	}
 	
 	
 	
 
-
 	/*
 	 * Listen() is used to start a new ClientThread to listen to the server.
 	 */
 	public void listen() throws IOException{
-		ClientThread thr = new ClientThread(this.in, this);
-		thr.run();
+		Thread thr = new Thread(new Runnable(){
+
+			@Override
+            public void run() {
+				try {
+					for (String line =in.readLine(); line!=null; line=in.readLine()) {
+			            handleResponses(line);
+			        }
+		        } catch (IOException e) {
+			        e.printStackTrace();
+		        }
+	            
+            }
+		}
+		);
+		thr.start();
 	}
 	/*
 	 * handleResponses is called on incoming strings from the server. It tokenizes the given string,
@@ -75,10 +102,9 @@ public class Client {
 				newUserList.add(tokens[i]);
 			}
 			this.users = newUserList;
-			
-			//TODO: update GUI's user list at this point.
+			//this.ourCanvas.getBoardUsers();
 		}
-		
+		else if (tokens[0].equals("Welcome")){}
 		else{
 			throw new RuntimeException("Recieved an improperly formatted string");
 		}
@@ -96,7 +122,8 @@ public class Client {
 	 * @param request - a properly formatted request string, as per the protocol.
 	 */
 	public void send(String request){
-		this.out.print(request);
+		System.out.println(request);
+		this.out.println(request);
 	}
 	
 	/*
@@ -130,6 +157,7 @@ public class Client {
 	
 	/*
 	 * setBoardNumber is used by the GUI to set the board number when the user changes it.
+	 * @param boardNum - the number of the board you are switching to.
 	 */
 	public void setBoardNumber(int boardNum){
 		if (boardNum<=0 && boardNum > 10){
@@ -170,12 +198,16 @@ public class Client {
 	            int p = Integer.parseInt(port.getText());
 	            String user = username.getText();
 	            String boardNumber = boards.getSelectedItem().toString();
+	            System.out.println(adr + " " + p + " " + user + " " + boardNumber);
 	            try {
+	            	box.dispose();
+	            	//new Client("localhost",4444, "joe", 0);
 	                new Client(adr,p, user, Integer.parseInt(boardNumber));
                 } catch (IOException e) {
+                	box.dispose();
 	                e.printStackTrace();
                 }
-	            box.dispose();
+	            
 	            
             }
 			

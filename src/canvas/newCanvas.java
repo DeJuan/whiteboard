@@ -528,11 +528,19 @@ public class newCanvas extends JPanel{
     		{
     		int x = e.getX();
     		int y = e.getY();
-    		
+    		try
+    		{
     		//made eraser width be controlled by slider
     		Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, (Integer)strokeWidth.getValue());
-    		eraserLineSegment(eraser);
+    		sendStroke(eraser);
     		
+    		}
+    		catch(Exception notaNum)
+    		{
+    			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, 1);
+    			sendStroke(eraser);
+    		}
+
     		
     		startingX = x;
     		startingY = y;
