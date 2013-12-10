@@ -33,7 +33,7 @@ public class Server
 		}
 	}
 	
-	public void addNewUserToBoard(String userName, int desiredBoard) throws Exception
+	public void addNewUserToBoard(String userName, int desiredBoard, Socket socket) throws Exception
 	{
 		//called from a new socket, initializing a user's info to point to the board we need. May need synchronization.
 		ArrayList<String> potentialBoard = this.userInfo.get(desiredBoard);
@@ -41,6 +41,7 @@ public class Server
 		if (!potentialBoard.contains(userName))
 		{
 			potentialBoard.add(userName);
+			listOfBoards.get(desiredBoard).addUser(socket);
 		}
 		else //TODO REMEMBER TO TEST USERNAME OVERLAPS. THIS MAY OR MAY NOT CRASH THE ENTIRE SERVER!!!!!!
 		{
@@ -48,10 +49,18 @@ public class Server
 		}
 	}
 		
-	public void removeUserFromBoard(String userName, int currentBoard)
+	public void removeUserFromBoard(String userName, int currentBoard, Socket socket) throws Exception
 	{
-		//Called when a user leaves the board and before they close their socket; want to remove their data. May not actually be needed.
-		userInfo.get(currentBoard).remove(userName);
+		//Called when a user leaves the board and before they close their socket; want to remove their data.
+		try
+		{
+			userInfo.get(currentBoard).remove(userName);
+			listOfBoards.get(currentBoard).removeUser(socket);
+		}
+		catch(Exception e)
+		{
+			throw new Exception("Failed to remove user from board.");
+		}
 	}
 	/*
 	private void addMessageToQueue(String message)
@@ -130,17 +139,34 @@ public class Server
 	            for (String line = in.readLine(); line != null; line = in.readLine()) //Need to discuss how these are going to be sent. 
 	            {
 	            	System.out.println("Succeeded in making in and out, and am about to call handleRequest");
-	                String output = handleRequest(line);  //Need to specify ahead of time which board we're adjusting. Just send the int, handle request will get the board out.  
+	                String output = handleRequest(line, socket);  //Need to specify ahead of time which board we're adjusting. Just send the int, handle request will get the board out.  
 	                if (output != null && output != "Disconnect") 
 	                {
-	                    out.println(output);
-	                    out.flush();
+	                	if(output.startsWith("brushstroke"))
+	                	{
+	                		System.out.println("brushy detected!!");
+	                		ArrayList<Socket> users = this.listOfBoards.get(Integer.parseInt(output.split(" ")[7])).getBoardUsers();
+	                		for(Socket user: users)
+	                		{
+	                			System.out.println("Printing to socket: " + user);
+	                			PrintWriter localOut = new PrintWriter(user.getOutputStream(), false);
+	                			localOut.println(output);
+	                			localOut.flush();
+	                		}
+	                	}
+	                	
+	                	else
+	                	{
+	                		out.println(output);
+	                		out.flush();
+	                	}
+	                	
 	                    
-	                    if( output == "Disconnect") //write listener code for DCing from a board and send this as output.
-	                    {
-	                    	socket.close(); 
-	                    }
 	                }
+	                if( output == "Disconnect") //write listener code for DCing from a board and send this as output.
+                    {
+                    	socket.close(); 
+                    }
 	            }
 	        } 	
 	        	finally 
@@ -156,21 +182,22 @@ public class Server
 	     * @param input message from client
 	     * @return message to client
 	     */
-	    private String handleRequest(String input) {
+	    private String handleRequest(String input, Socket socket) {
 	    	
 	        String[] tokens = input.split(" ");
 	        if (tokens[0].equals("brushstroke")) //"brushstroke x1 x2 y1 y2 ColorData width boardnum 
 	        {
 	        	int boardNumber = Integer.parseInt(input.split(" ")[7]);
 	        	Board board = listOfBoards.get(boardNumber);
-	        	return board.registerStroke(input);
+	        	return board.registerStroke(input, boardNumber);
+	        	
 	        }
 	        
 	        else if (tokens[0].equals("joinBoard")) //"joinBoard username boardNumber
 	        {
 	        	try {
 	        			int boardNum = Integer.parseInt(tokens[2]);
-						addNewUserToBoard(tokens[1], boardNum);
+						addNewUserToBoard(tokens[1], boardNum, socket);
 						return userListParser(boardNum);
 					}  
 	        	catch (Exception e) 
@@ -183,7 +210,14 @@ public class Server
 	        else if (tokens[0].equals("exitBoard")) //"exitBoard username currentBoard
 	        {
 	        	int boardNum = Integer.parseInt(tokens[2]);
-	        	removeUserFromBoard(tokens[1], boardNum);
+	        	try 
+	        	{
+	        		removeUserFromBoard(tokens[1], boardNum, socket);
+				} 
+	        	catch (Exception e) 
+	        	{
+					System.out.println("Failed to exit the board.");
+				}
 	        	return userListParser(boardNum);
 	        }
 	        /*
@@ -228,7 +262,7 @@ public class Server
         	String usersInString = users.toString();
         	String usersNoBrackets = usersInString.substring(1, usersInString.length()-1);
         	String usersNoCommas = usersNoBrackets.replace(",", "");
-        	return (usersNoCommas);
+        	return ("userList " + usersNoCommas);
 	    }
 	    
 	    
