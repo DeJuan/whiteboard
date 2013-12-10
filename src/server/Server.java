@@ -8,6 +8,18 @@ import java.util.*;
 
 import canvas.Brushstroke;
 
+/**
+ * This class is the actual server that we use to keep track of all the separate whiteboards and clients.
+ * It takes in two parameters: The port used and a boardCount. 
+ * Currently, the port is adjustable freely, but defaults to 4444. 
+ * However, the boardCount is fixed at 10 for our implementation. In the interest of being ready for change,
+ * I have left this as a potentially variable amount.  
+ * 
+ * @param port
+ * @param boardCount
+ * @throws IOException
+ * @author DeJuan
+ */
 public class Server 
 {
 	
@@ -19,13 +31,7 @@ public class Server
 	private ServerSocket serverSocket;
 	private Object lock = new Object(); //Made so that I don't lock on the class if I need to synchro something. 
 	
-	/**
-	 * This class is the actual server that we use to keep track of all the separate whiteboards and clients. 
-	 * 
-	 * @param port
-	 * @param boardCount
-	 * @throws IOException
-	 */
+	
 	public Server(int port, int boardCount) throws IOException
 	{
 		for(int i = 0; i < boardCount; i++)
@@ -44,6 +50,26 @@ public class Server
 		}
 	}
 	
+	/**
+	 * This method is called when a new client connects and wishes to access one of our boards. 
+	 * We first check whether or not their username is available. If it is not, we throw an exception
+	 * indicating that we cannot allow them to connect as they'd overlap usernames.
+	 * 
+	 * If the name is available, then we record a set of information that will allow us to uniquely identify any given client
+	 * from any one parameter. This is done through a series of three hashmaps;
+	 * One of them has board numbers as a key, and ArrayList<String> of board usernames as values. This gives easy access to a list of users for any one board.
+	 * The next registers the user's socket as its key, and has their username as the value.
+	 * Lastly, one takes in the username as key and ouput the board number as value.
+	 * 
+	 * We record all the data regarding the current user then add them to the board they want.
+	 * The update to all previous brushstrokes that occurred on that board is handled by a seperate call.
+	 * The reason for this delay is because otherwise, the client receives the update before their c
+	 * 
+	 * @param userName
+	 * @param desiredBoard
+	 * @param socket
+	 * @throws Exception
+	 */
 	public void addNewUserToBoard(String userName, int desiredBoard, Socket socket) throws Exception
 	{
 		//called from a new socket, initializing a user's info to point to the board we need. May need synchronization.
@@ -54,13 +80,13 @@ public class Server
 			listOfBoards.get(desiredBoard).addUser(socket);
 			userSocketToUsername.put(socket, userName);
 			usernameToBoardNumber.put(userName, desiredBoard);
+			/*
 			List<Brushstroke> allStrokes = listOfBoards.get(desiredBoard).getStrokes();
-			System.out.println(allStrokes.toString());
 			PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
 			for(Brushstroke stroke: allStrokes)
 			{
 				output.println("brushstroke " + stroke.toString() + " " + desiredBoard);
-			}
+			}*/
 			
 		}
 		else //TODO REMEMBER TO TEST USERNAME OVERLAPS. THIS MAY OR MAY NOT CRASH THE ENTIRE SERVER!!!!!!
@@ -69,6 +95,12 @@ public class Server
 		}
 	}
 		
+	/**
+	 * This method is called when a user disconnects from the server. It uses their socket to retrieve all of the information we stored
+	 * regarding this users, and then removes all of it before finally 
+	 * @param socket
+	 * @throws Exception
+	 */
 	public void removeUserFromBoard(Socket socket) throws Exception
 	{
 		//Called when a user leaves the board and before they close their socket; want to remove their data.
@@ -111,7 +143,6 @@ public class Server
 	            			//addNewUserToBoard(); //TODO need to figure out how to get the index of the desired board in here. If we get that, we're done.
 	            			//That's the main problem of this section.
 	            			//UPDATE: Don't worry about that here. Do it later in actually handling requests.
-	            			System.out.println("Reached serve's try");
 	                        handleConnection(socket); //TODO add more info that needs to be passed here
 	                    } 
 	            		catch (Exception e) 
@@ -266,6 +297,24 @@ public class Server
 	        	return userListParser(Integer.parseInt(tokens[1]));
 	        }
 	        
+	        else if(tokens[0].equals("getAllBrushstrokes")) //"getAllBrushstrokes boardNumber
+	        {
+	        	try 
+	        	{
+	        		int boardNum = Integer.parseInt(tokens[1]);
+	        		List<Brushstroke> allStrokes = this.listOfBoards.get(boardNum).getStrokes();
+	        		PrintWriter temp = new PrintWriter(socket.getOutputStream(), true);
+	        		for(Brushstroke stroke: allStrokes)
+	        		{
+	        			temp.println("brushstroke " + stroke.toString() + " " + boardNum);
+	        		}
+				} 
+	        	catch (IOException e) 
+	        	{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
 	        else if(tokens[0].equals("exit") || tokens[0].equals("quit") ||  tokens[0].equals("bye") || tokens[0].equals("dc") ||tokens[0].equals("disconnect"))
 	        {
 	        	return "Disconnect";
