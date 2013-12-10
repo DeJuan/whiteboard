@@ -32,17 +32,24 @@ public class Client {
 		this.username=username;
 		this.boardNumber= boardNumber;
 		this.ourCanvas= new newCanvas(500,800,this);
+		JFrame window = new JFrame("Freehand Canvas");
+		System.out.println("Check");
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setLayout(new BorderLayout());
+        window.add(ourCanvas, BorderLayout.CENTER);
+        window.pack();
+        window.setVisible(true);
+//		ourCanvas.setVisible(true);
 		this.socket= new Socket(this.address, this.port);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
+        System.out.println("About to listen");
         this.listen();
         this.join(boardNumber);
-        this.requestUserList();
 	}
 	
 	
 	
-
 
 	/*
 	 * Listen() is used to start a new ClientThread to listen to the server.
@@ -78,7 +85,7 @@ public class Client {
 			
 			//TODO: update GUI's user list at this point.
 		}
-		
+		else if (tokens[0].equals("Welcome")){}
 		else{
 			throw new RuntimeException("Recieved an improperly formatted string");
 		}
@@ -166,16 +173,19 @@ public class Client {
 
 			@Override
             public void actionPerformed(ActionEvent ae) {
-	            String adr = address.getText();
-	            int p = Integer.parseInt(port.getText());
-	            String user = username.getText();
-	            String boardNumber = boards.getSelectedItem().toString();
+	            //String adr = address.getText();
+	            //int p = Integer.parseInt(port.getText());
+	            //String user = username.getText();
+	            //String boardNumber = boards.getSelectedItem().toString();
 	            try {
-	                new Client(adr,p, user, Integer.parseInt(boardNumber));
+	            	box.dispose();
+	            	new Client("localhost",4444, "joe", 0);
+	                //new Client(adr,p, user, Integer.parseInt(boardNumber));
                 } catch (IOException e) {
+                	box.dispose();
 	                e.printStackTrace();
                 }
-	            box.dispose();
+	            
 	            
             }
 			
