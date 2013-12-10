@@ -186,12 +186,12 @@ public class Server
 	        out.println("Welcome to the whiteboard command center.");
 	        try 
 	        {
-	            for (String line = in.readLine(); line != null; line = in.readLine()) //Need to discuss how these are going to be sent. 
+	            for (String line = in.readLine(); line != null; line = in.readLine())  
 	            {
-	            	System.out.println("Succeeded in making in and out, and am about to call handleRequest");
-	                String output = handleRequest(line, socket);  //Need to specify ahead of time which board we're adjusting. Just send the int, handle request will get the board out.  
+	            	//System.out.println("Succeeded in making in and out, and am about to call handleRequest");
+	                String output = handleRequest(line, socket);    
 	                
-	                if( output == "Disconnect") //write listener code for DCing from a board and send this as output.
+	                if( output == "Disconnect") 
                     {
 	                	removeUserFromBoard(socket);
                     	socket.close(); 
@@ -308,6 +308,7 @@ public class Server
 	        		{
 	        			temp.println("brushstroke " + stroke.toString() + " " + boardNum);
 	        		}
+	        		return null;
 				} 
 	        	catch (IOException e) 
 	        	{
