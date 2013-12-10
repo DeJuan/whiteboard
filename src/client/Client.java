@@ -13,6 +13,11 @@ import javax.swing.*;
 
 import canvas.*;
 
+/*
+ * The CLient class is used to communicate with the server and GUI. It listens to the server,
+ * it sends messages to server based on commands from the GUI, and it updates the GUI based on
+ * incoming info from the server.
+ */
 
 public class Client {
 	
@@ -25,6 +30,8 @@ public class Client {
 	private PrintWriter out;
 	private Socket socket;
 	public ArrayList<String> users;
+	public Boolean ready = false;
+	public ArrayList<String> holder = new ArrayList<String>();
 	
 	public Client(String address, int port, String username, int boardNumber) throws IOException{
 		this.address = address;
@@ -33,7 +40,11 @@ public class Client {
 		this.boardNumber= boardNumber;
 		this.ourCanvas= new newCanvas(500,800,this);
 		
-		JFrame window = new JFrame("Freehand Canvas");
+		this.socket= new Socket(this.address, this.port);
+		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new PrintWriter(socket.getOutputStream(), true);
+        
+        JFrame window = new JFrame("Freehand Canvas");
 		System.out.println("Check");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLayout(new BorderLayout());
@@ -41,16 +52,15 @@ public class Client {
         window.pack();
         window.setVisible(true);
         
-		this.socket= new Socket(this.address, this.port);
-		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true);
-        
-        
-        
-        
         System.out.println("About to listen");
-        this.join(boardNumber);
         this.listen();
+        try{
+        	Thread.sleep(1000);
+        }catch(Exception e){
+        	e.printStackTrace();
+        }
+        this.join(boardNumber);
+        this.getAllBrushstrokes();
         
 	}
 	
@@ -84,29 +94,31 @@ public class Client {
 	 * @param response - A response from the server, properly formatted per the protocol.
 	 */
 	public void handleResponses(String response){
-		String[] tokens = response.split(" ");
-		
-		if (tokens[0].equals("brushstroke")){
-			Brushstroke newStroke = new Brushstroke(
-					Integer.parseInt(tokens[1]), 
-					Integer.parseInt(tokens[2]), 
-					Integer.parseInt(tokens[3]), 
-					Integer.parseInt(tokens[4]), 
-					new Color(Integer.parseInt(tokens[5])), 
-					Integer.parseInt(tokens[6]));
-			ourCanvas.drawLineSegment(newStroke);
-		}
-		else if (tokens[0].equals("userList")){
-			ArrayList<String> newUserList = new ArrayList<String>();
-			for (int i =1; i<tokens.length; i++){
-				newUserList.add(tokens[i]);
+		if (this.ready){
+			String[] tokens = response.split(" ");
+			
+			if (tokens[0].equals("brushstroke")){
+				Brushstroke newStroke = new Brushstroke(
+						Integer.parseInt(tokens[1]), 
+						Integer.parseInt(tokens[2]), 
+						Integer.parseInt(tokens[3]), 
+						Integer.parseInt(tokens[4]), 
+						new Color(Integer.parseInt(tokens[5])), 
+						Integer.parseInt(tokens[6]));
+				ourCanvas.drawLineSegment(newStroke);
 			}
-			this.users = newUserList;
-			//this.ourCanvas.getBoardUsers();
-		}
-		else if (tokens[0].equals("Welcome")){}
-		else{
-			throw new RuntimeException("Recieved an improperly formatted string");
+			else if (tokens[0].equals("userList")){
+				ArrayList<String> newUserList = new ArrayList<String>();
+				for (int i =1; i<tokens.length; i++){
+					newUserList.add(tokens[i]);
+				}
+				this.users = newUserList;
+				//this.ourCanvas.getBoardUsers();
+			}
+			else if (tokens[0].equals("Welcome")){}
+			else{
+				throw new RuntimeException("Recieved an improperly formatted string");
+			}
 		}
 	}
 	
@@ -134,10 +146,10 @@ public class Client {
 		this.send(request);
 	}
 	/*
-	 * change is used to send a changeBoard message to the server
+	 * getAllBrushstrokes is used to send a getAllBrushstrokes request to the server.
 	 */
-	public void change(int boardID){
-		String request = "changeBoard " + username + " " + this.boardNumber + " " + boardID;
+	public void getAllBrushstrokes(){
+		String request = "getAllBrushstrokes " + this.boardNumber;
 		this.send(request);
 	}
 	/*
