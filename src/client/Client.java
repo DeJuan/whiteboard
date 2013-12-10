@@ -62,6 +62,12 @@ public class Client {
 			@Override
             public void windowClosing(WindowEvent arg0) {
 	            exit();
+	            try {
+	                socket.close();
+                } catch (IOException e) {
+	                // TODO Auto-generated catch block
+	                e.printStackTrace();
+                }
 	            
             }
 
