@@ -157,7 +157,7 @@ public class Client {
 			for (String user: this.users){
 				view += user +"\n";
 			}
-			//this.ourCanvas.updateUsers(view);
+			this.ourCanvas.updateUsers(view);
 		}
 		else if (tokens[0].equals("Welcome")){}
 		else{
