@@ -51,7 +51,7 @@ public class newCanvas extends JPanel implements ActionListener{
     private int colorButtonSelected = 0;
     private String users;
     private Client client;
-    private JInternalFrame usersFrame = new JInternalFrame(); 
+    private JFrame usersFrame = new JFrame(); 
     private JButton openUserList;
     private JTextField userField;
     boolean usersFrameOpen = false;
@@ -89,8 +89,8 @@ public class newCanvas extends JPanel implements ActionListener{
         else{
         	usersFrame.setVisible(false);
         }
-        usersFrame.setClosable(true);
-        usersFrame.setSize(new Dimension(100,50));
+       
+        //usersFrame.setSize(new Dimension(100,50));
         //usersFrame.setDefaultCloseOperation(HIDE_ON_CLOSE);
         
         //toolbar will display the 3 most recent colors. 
@@ -226,7 +226,7 @@ public class newCanvas extends JPanel implements ActionListener{
         toolbar.add(recent1);
         toolbar.add(recent2);
         toolbar.add(recent3);
-        add(usersFrame);
+        
         //toolbar.add(boardNum);
         add(toolbar);
         //Make the buttons, add the mouse listener to them, and add the buttons to the canvas.
@@ -256,6 +256,7 @@ public class newCanvas extends JPanel implements ActionListener{
     
     public void updateUsers(String newUsers){
     	userField.setText(newUsers);
+    	userField.setSize(30,100);
     }
     
     /*
