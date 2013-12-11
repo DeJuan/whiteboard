@@ -2,8 +2,6 @@ package client;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,9 +17,6 @@ import canvas.*;
  * The CLient class is used to communicate with the server and GUI. It listens to the server,
  * it sends messages to server based on commands from the GUI, and it updates the GUI based on
  * incoming info from the server.
- * 
- * The client consists of two threads, one for receiving info from the server, and one for
- * sending messages to the server. It is thread-safe, because the two thread do not share any variables. 
  */
 
 public class Client {
@@ -35,65 +30,35 @@ public class Client {
 	private PrintWriter out;
 	private Socket socket;
 	public ArrayList<String> users;
-	
+	public Boolean ready = false;
+	public ArrayList<String> holder = new ArrayList<String>();
 	
 	public Client(String address, int port, String username, int boardNumber) throws IOException{
 		this.address = address;
 		this.port = port;
 		this.username=username;
 		this.boardNumber= boardNumber;
-		this.ourCanvas= new newCanvas(800,500,this,boardNumber);
+		this.ourCanvas= new newCanvas(500,800,this,boardNumber);
 		
 		this.socket= new Socket(this.address, this.port);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
         
         JFrame window = new JFrame("Freehand Canvas");
-		
-        
+		System.out.println("Check");
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLayout(new BorderLayout());
-        window.addWindowListener(new WindowListener(){
-
-			@Override
-            public void windowActivated(WindowEvent arg0) {
-            }
-
-			@Override
-            public void windowClosed(WindowEvent arg0) {
-            }
-
-			@Override
-            public void windowClosing(WindowEvent arg0) {
-	            exit();
-	            try {
-	                socket.close();
-                } catch (IOException e) {
-	                e.printStackTrace();
-                }
-	            
-            }
-
-			@Override
-            public void windowDeactivated(WindowEvent arg0) {
-            }
-
-			@Override
-            public void windowDeiconified(WindowEvent arg0) {
-            }
-
-			@Override
-            public void windowIconified(WindowEvent arg0) {
-            }
-
-			@Override
-            public void windowOpened(WindowEvent arg0){
-            }
-        });
         window.add(ourCanvas, BorderLayout.CENTER);
         window.pack();
         window.setVisible(true);
         
+        System.out.println("About to listen");
         this.listen();
+        try{
+        	Thread.sleep(1000);
+        }catch(Exception e){
+        	e.printStackTrace();
+        }
         this.join(boardNumber);
         this.getAllBrushstrokes();
         
@@ -110,14 +75,8 @@ public class Client {
 
 			@Override
             public void run() {
-				try{
-		        	Thread.sleep(1000);
-		        }catch(Exception e){
-		        	e.printStackTrace();
-		        }
 				try {
 					for (String line =in.readLine(); line!=null; line=in.readLine()) {
-						
 			            handleResponses(line);
 			        }
 		        } catch (IOException e) {
@@ -135,40 +94,37 @@ public class Client {
 	 * @param response - A response from the server, properly formatted per the protocol.
 	 */
 	public void handleResponses(String response){
-		String[] tokens = response.split(" ");
-		
-		if (tokens[0].equals("brushstroke")){
-			Brushstroke newStroke = new Brushstroke(
-					Integer.parseInt(tokens[1]), 
-					Integer.parseInt(tokens[2]), 
-					Integer.parseInt(tokens[3]), 
-					Integer.parseInt(tokens[4]), 
-					new Color(Integer.parseInt(tokens[5])), 
-					Integer.parseInt(tokens[6]));
-			ourCanvas.drawLineSegment(newStroke);
-		}
-		else if (tokens[0].equals("userList")){
-			ArrayList<String> newUserList = new ArrayList<String>();
-			for (int i =1; i<tokens.length; i++){
-				newUserList.add(tokens[i]);
+		if (this.ready){
+			String[] tokens = response.split(" ");
+			
+			if (tokens[0].equals("brushstroke")){
+				Brushstroke newStroke = new Brushstroke(
+						Integer.parseInt(tokens[1]), 
+						Integer.parseInt(tokens[2]), 
+						Integer.parseInt(tokens[3]), 
+						Integer.parseInt(tokens[4]), 
+						new Color(Integer.parseInt(tokens[5])), 
+						Integer.parseInt(tokens[6]));
+				ourCanvas.drawLineSegment(newStroke);
 			}
-			this.users = newUserList;
-			String view = "";
-			for (String user: this.users){
-				view += user +"\n";
+			else if (tokens[0].equals("userList")){
+				ArrayList<String> newUserList = new ArrayList<String>();
+				for (int i =1; i<tokens.length; i++){
+					newUserList.add(tokens[i]);
+				}
+				this.users = newUserList;
+				//this.ourCanvas.getBoardUsers();
 			}
-			this.ourCanvas.updateUsers(view);
-		}
-		else if (tokens[0].equals("Welcome")){}
-		else{
-			throw new RuntimeException("Recieved an improperly formatted string");
+			else if (tokens[0].equals("Welcome")){}
+			else{
+				throw new RuntimeException("Recieved an improperly formatted string");
+			}
 		}
 	}
 	
 	/*
 	 * translateBrushstroke() takes a brushstroke and returns a properly formatted string
 	 * as per our protocol.
-	 * @param b - a brushstroke to be translated
 	 */
 	public String translateBrushstroke(Brushstroke b){
 		return "brushstroke " + b.toString() + " " + this.boardNumber;
@@ -178,6 +134,7 @@ public class Client {
 	 * @param request - a properly formatted request string, as per the protocol.
 	 */
 	public void send(String request){
+		System.out.println(request);
 		this.out.println(request);
 	}
 	
@@ -205,7 +162,6 @@ public class Client {
 	
 	/*
 	 * getBoardNumber number is used by the GUI to get the board number.
-	 * @returns the current board number.
 	 */
 	public int getBoardNumber(){
 		return this.boardNumber;
@@ -242,7 +198,7 @@ public class Client {
 		final JTextField username = new JTextField();
 		JLabel boardNumLabel = new JLabel("Board #");
 		String[] boardsArray = {"0", "1", "2","3","4","5","6","7","8","9"};
-		final JComboBox<String> boards = new JComboBox<String>(boardsArray);
+		final JComboBox boards = new JComboBox(boardsArray);
 		boards.setSelectedIndex(0);
 		JButton go = new JButton("Start!");
 		
@@ -254,8 +210,10 @@ public class Client {
 	            int p = Integer.parseInt(port.getText());
 	            String user = username.getText();
 	            String boardNumber = boards.getSelectedItem().toString();
+	            System.out.println(adr + " " + p + " " + user + " " + boardNumber);
 	            try {
 	            	box.dispose();
+	            	//new Client("localhost",4444, "joe", 0);
 	                new Client(adr,p, user, Integer.parseInt(boardNumber));
                 } catch (IOException e) {
                 	box.dispose();
@@ -299,6 +257,11 @@ public class Client {
         				
         		);
         
+//		addressReq.add(addressLabel);
+//		addressReq.add(address);
+//		addressReq.add(portLabel);
+//		addressReq.add(port);
+//		addressReq.add(go);
         
         addressReq.setLayout(layout);
         box.add(addressReq);

@@ -44,15 +44,17 @@ public class newCanvas extends JPanel implements ActionListener{
     private JSlider strokeWidth;
     private Color currentPenColor = Color.black;
     private JColorChooser palette = new JColorChooser(Color.black);
-    private JMenu boardMenu;
+    //private JMenu boardMenu;
     private ArrayList<Color> RecentColors = new ArrayList<Color>(); 
     private int currentBoard;
+    private JLabel boardNum;
     private int colorButtonSelected = 0;
-    private ArrayList<String> users;
-    private JMenu usersMenu;
-    private ArrayList<String> sameBoardUsers;
+    private String users;
     private Client client;
-    
+    private JInternalFrame usersFrame;
+    private JButton openUserList;
+    private JTextField userField;
+    boolean usersFrameOpen = false;
     
     
     /**
@@ -68,9 +70,25 @@ public class newCanvas extends JPanel implements ActionListener{
         addDrawingController();
         addEraserController();
         currentBoard = startingBoardNumber;
-        boardMenu = new JMenu("Change Boards");
-        usersMenu = new JMenu("Other Users");
-        JToolBar toolbar = new JToolBar();
+        //JLabel boardNum = new JLabel(currentBoard.toString());
+        //boardMenu = new JMenu("Change Boards");
+        JTextField userField = new JTextField(this.users);
+        JToolBar toolbar = new JToolBar();                
+        
+        JButton openUserList = new JButton("Other Users");
+        openUserList.addActionListener(this);
+        openUserList.setActionCommand("userList");
+        
+        JInternalFrame usersFrame = new JInternalFrame("Other Board Users");
+        usersFrame.setContentPane(userField);
+        //if(usersFrameOpen){
+        	usersFrame.setVisible(true);
+       // }
+        //else{
+        //	usersFrame.setVisible(false);
+        //}
+        usersFrame.setClosable(true);
+        //usersFrame.setDefaultCloseOperation(HIDE_ON_CLOSE);
         
         //toolbar will display the 3 most recent colors. 
         //gray orange and pink display until
@@ -79,67 +97,10 @@ public class newCanvas extends JPanel implements ActionListener{
         RecentColors.add(Color.orange);
         RecentColors.add(Color.pink);
                
-        JRadioButtonMenuItem board0 = new JRadioButtonMenuItem("Board 0");
-        boardMenu.add(board0);
-        if(currentBoard == 0){
-        	board0.setSelected(true);
-        }	
-        JRadioButtonMenuItem board1 = new JRadioButtonMenuItem("Board 1");
-        boardMenu.add(board1);
-        if(currentBoard == 1){
-        	board1.setSelected(true);
-        }	
-        JRadioButtonMenuItem board2 = new JRadioButtonMenuItem("Board 2");
-        boardMenu.add(board2);
-        if(currentBoard == 2){
-        	board2.setSelected(true);
-        }	
-        JRadioButtonMenuItem board3 = new JRadioButtonMenuItem("Board 3");
-        boardMenu.add(board3);
-        if(currentBoard == 3){
-        	board3.setSelected(true);
-        }	
-        JRadioButtonMenuItem board4 = new JRadioButtonMenuItem("Board 4");
-        boardMenu.add(board4);
-        if(currentBoard == 4){
-        	board4.setSelected(true);
-        }	
-        JRadioButtonMenuItem board5 = new JRadioButtonMenuItem("Board 5");
-        boardMenu.add(board5);
-        if(currentBoard == 5){
-        	board5.setSelected(true);
-        }	
-        JRadioButtonMenuItem board6 = new JRadioButtonMenuItem("Board 6");
-        boardMenu.add(board6);
-        if(currentBoard == 6){
-        	board6.setSelected(true);
-        }	
-        JRadioButtonMenuItem board7 = new JRadioButtonMenuItem("Board 7");
-        boardMenu.add(board7);
-        if(currentBoard == 7){
-        	board7.setSelected(true);
-        }	
-        JRadioButtonMenuItem board8 = new JRadioButtonMenuItem("Board 8");
-        boardMenu.add(board8);
-        if(currentBoard == 8){
-        	board8.setSelected(true);
-        }	
-        JRadioButtonMenuItem board9 = new JRadioButtonMenuItem("Board 9");
-        boardMenu.add(board9);
-        if(currentBoard == 9){
-        	board9.setSelected(true);
-        }	
         
-        JScrollPane boardUsers = new JScrollPane();
-        sameBoardUsers = new ArrayList<String>();
-        JLabel usersTitle = new JLabel("Other users on this board:");
-        boardUsers.add(usersTitle);
-        for(int i = 0; i < sameBoardUsers.size();i++){
-        	String name = sameBoardUsers.get(i);
-        	JLabel temp = new JLabel(name);
-        	boardUsers.add(temp);
-        }
-        usersMenu.add(boardUsers);
+       
+       
+        
         //must still add listener to change to new board when clicked. 
         
         PaletteListener paletteController = new PaletteListener();
@@ -154,9 +115,10 @@ public class newCanvas extends JPanel implements ActionListener{
         
         JButton blue = new JButton();
         blue.setBackground(Color.blue);
-        blue.setPreferredSize(new Dimension(10, 10));
+        blue.setPreferredSize(new Dimension(30, 30));
         blue.setActionCommand("blue");
         blue.addActionListener(this);
+        blue.setOpaque(true);
         if(colorButtonSelected == 1){
         	blue.setFocusPainted(true);
         }
@@ -166,9 +128,10 @@ public class newCanvas extends JPanel implements ActionListener{
         
         JButton red = new JButton();
         red.setBackground(Color.red);
-        red.setPreferredSize(new Dimension(10, 10));
+        red.setPreferredSize(new Dimension(30, 30));
         red.setActionCommand("red");
         red.addActionListener(this);
+        red.setOpaque(true);
         if(colorButtonSelected == 2){
         	red.setFocusPainted(true);
         }
@@ -178,9 +141,10 @@ public class newCanvas extends JPanel implements ActionListener{
         
         JButton green = new JButton();
         green.setBackground(Color.green);
-        green.setPreferredSize(new Dimension(10,10));
+        green.setPreferredSize(new Dimension(30,30));
         green.setActionCommand("green");
         green.addActionListener(this);
+        green.setOpaque(true);
         if(colorButtonSelected == 3){
         	green.setFocusPainted(true);
         }
@@ -190,9 +154,10 @@ public class newCanvas extends JPanel implements ActionListener{
         
         JButton black = new JButton();
         black.setBackground(Color.black);
-        black.setPreferredSize(new Dimension(10,10));
+        black.setPreferredSize(new Dimension(30,30));
         black.setActionCommand("black");
         black.addActionListener(this);
+        black.setOpaque(true);
         if(colorButtonSelected == 4){
         	black.setFocusPainted(true);
         	currentPenColor = Color.black;
@@ -203,9 +168,10 @@ public class newCanvas extends JPanel implements ActionListener{
         
         JButton yellow = new JButton();
         yellow.setBackground(Color.yellow);
-        yellow.setPreferredSize(new Dimension(10,10));
+        yellow.setPreferredSize(new Dimension(30,30));
         yellow.setActionCommand("yellow");
         yellow.addActionListener(this);
+        yellow.setOpaque(true);
         if(colorButtonSelected == 5){
         	yellow.setFocusPainted(true);
         }
@@ -215,8 +181,9 @@ public class newCanvas extends JPanel implements ActionListener{
         
         JButton recent1 = new JButton();
         recent1.setBackground(RecentColors.get(1));
-        recent1.setPreferredSize(new Dimension(10,10));
+        recent1.setPreferredSize(new Dimension(30,30));
         recent1.setActionCommand("recent1");
+        recent1.setOpaque(true);
         recent1.addActionListener(this);
         if(colorButtonSelected == 6){
         	
@@ -224,14 +191,16 @@ public class newCanvas extends JPanel implements ActionListener{
         
         JButton recent2 = new JButton();
         recent2.setBackground(RecentColors.get(2));
-        recent2.setPreferredSize(new Dimension(10,10));
+        recent2.setPreferredSize(new Dimension(30,30));
         recent2.setActionCommand("recent2");
+        recent2.setOpaque(true);
         recent2.addActionListener(this);
         
         JButton recent3 = new JButton();
         recent3.setBackground(RecentColors.get(3));
-        recent3.setPreferredSize(new Dimension(10,10));
+        recent3.setPreferredSize(new Dimension(30,30));
         recent3.setActionCommand("recent3");
+        recent3.setOpaque(true);
         recent3.addActionListener(this);
         
         JLabel widthLabel = new JLabel("Pen Size");
@@ -242,16 +211,20 @@ public class newCanvas extends JPanel implements ActionListener{
         DrawOrErase.addMouseListener(new eraseButtonListener());
         toolbar.add(DrawOrErase);
         toolbar.add(paletteButton);
+        toolbar.add(openUserList);
+        //toolbar.add(boardNum);
         toolbar.add(widthLabel);
         toolbar.add(strokeWidth);
-       // toolbar.add(resetter);
-        toolbar.add(boardMenu);
         toolbar.add(blue);
         toolbar.add(red);
         toolbar.add(green);
         toolbar.add(black);
         toolbar.add(yellow);
-        toolbar.add(usersMenu);
+        toolbar.add(recent1);
+        toolbar.add(recent2);
+        toolbar.add(recent3);
+        
+        //toolbar.add(boardNum);
         add(toolbar);
         //Make the buttons, add the mouse listener to them, and add the buttons to the canvas.
         
@@ -278,7 +251,7 @@ public class newCanvas extends JPanel implements ActionListener{
     }
     
     
-    public void updateUsers(ArrayList<String> newUsers){
+    public void updateUsers(String newUsers){
     	users = newUsers;
     }
     
@@ -289,8 +262,7 @@ public class newCanvas extends JPanel implements ActionListener{
     private void makeDrawingBuffer() 
     {
         drawingBuffer = createImage(getWidth(), getHeight());
-        fillWithWhite();
-        drawSmile();
+        fillWithWhite();        
     }
     
     /*
@@ -307,40 +279,7 @@ public class newCanvas extends JPanel implements ActionListener{
         // have to notify Swing to repaint this component on the screen.
         this.repaint();
     }
-    
-    /*
-     * Draw a happy smile on the drawing buffer.
-     */
-    private void drawSmile() 
-    {
-        final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
-        // all positions and sizes below are in pixels
-        final Rectangle smileBox = new Rectangle(20, 20, 100, 100); // x, y, width, height
-        final Point smileCenter = new Point(smileBox.x + smileBox.width/2, smileBox.y + smileBox.height/2);
-        final int smileStrokeWidth = 3;
-        final Dimension eyeSize = new Dimension(9, 9);
-        final Dimension eyeOffset = new Dimension(smileBox.width/6, smileBox.height/6);
-        
-        g.setColor(Color.BLACK);
-        g.setStroke(new BasicStroke(smileStrokeWidth));
-        
-        // draw the smile -- an arc inscribed in smileBox, starting at -30 degrees (southeast)
-        // and covering 120 degrees
-        g.drawArc(smileBox.x, smileBox.y, smileBox.width, smileBox.height, -30, -120);
-        
-        // draw some eyes to make it look like a smile rather than an arc
-        for (int side: new int[] { -1, 1 }) {
-            g.fillOval(smileCenter.x + side * eyeOffset.width - eyeSize.width/2,
-                       smileCenter.y - eyeOffset.height - eyeSize.width/2,
-                       eyeSize.width,
-                       eyeSize.height);
-        }
-        
-        // IMPORTANT!  every time we draw on the internal drawing buffer, we
-        // have to notify Swing to repaint this component on the screen.
-        this.repaint();
-    }
     
     /*
      * Draw a line between two points (x1, y1) and (x2, y2), specified in
@@ -444,9 +383,11 @@ public class newCanvas extends JPanel implements ActionListener{
     
     public static JToggleButton DrawOrErase = new JToggleButton("Eraser",false);
     //DrawOrErase.addMouseListener(new eraseButtonListener());
+     
     
    //Toggles the boolean that controls erasure vs drawing.  
-   private class eraseButtonListener implements MouseListener{
+    
+    private class eraseButtonListener implements MouseListener{
 
 	@Override
 	public void mouseClicked(MouseEvent e) 
@@ -490,18 +431,7 @@ public class newCanvas extends JPanel implements ActionListener{
         this.repaint();
     }
     */
-    public ArrayList<String> getBoardUsers(){
-    	ArrayList<String> output = new ArrayList<String>();
-    	//can't call get board number on users other than this
-    	for(int i = 0; i < users.size();i++){
-    		//if(users.get(i).getBoardNumber() == currentBoard){
-    			output.add(users.get(i));
-    	//}
-    	}
-    	sameBoardUsers = output;
-    	return output;
-    }
-   
+
     private void eraserLineSegment(Brushstroke eraserStroke)
     {
     	Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
@@ -614,6 +544,16 @@ public class newCanvas extends JPanel implements ActionListener{
     		Color temp0 = RecentColors.get(3);
     		RecentColors.remove(3);
     		RecentColors.add(0,temp0);
+    	}
+    	else if("userList".equals(e.getActionCommand())){
+    		if(!usersFrameOpen){
+    			usersFrame.setVisible(true);
+    			usersFrameOpen = true;
+    		}
+    		else{
+    			usersFrame.setVisible(false);
+    			usersFrameOpen = false;
+    		}
     	}
     }
     
