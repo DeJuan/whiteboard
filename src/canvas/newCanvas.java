@@ -51,7 +51,7 @@ public class newCanvas extends JPanel implements ActionListener{
     private int colorButtonSelected = 0;
     private String users;
     private Client client;
-    private JInternalFrame usersFrame;
+    private JInternalFrame usersFrame = new JInternalFrame(); 
     private JButton openUserList;
     private JTextField userField;
     boolean usersFrameOpen = false;
@@ -72,22 +72,25 @@ public class newCanvas extends JPanel implements ActionListener{
         currentBoard = startingBoardNumber;
         //JLabel boardNum = new JLabel(currentBoard.toString());
         //boardMenu = new JMenu("Change Boards");
-        JTextField userField = new JTextField(this.users);
+        userField = new JTextField(this.users);
+        userField.setEditable(false);
         JToolBar toolbar = new JToolBar();                
+        usersFrame.add(userField);
         
         JButton openUserList = new JButton("Other Users");
         openUserList.addActionListener(this);
         openUserList.setActionCommand("userList");
         
-        JInternalFrame usersFrame = new JInternalFrame("Other Board Users");
+        
         usersFrame.setContentPane(userField);
-        //if(usersFrameOpen){
+        if(usersFrameOpen){
         	usersFrame.setVisible(true);
-       // }
-        //else{
-        //	usersFrame.setVisible(false);
-        //}
+        }
+        else{
+        	usersFrame.setVisible(false);
+        }
         usersFrame.setClosable(true);
+        usersFrame.setSize(new Dimension(100,50));
         //usersFrame.setDefaultCloseOperation(HIDE_ON_CLOSE);
         
         //toolbar will display the 3 most recent colors. 
@@ -223,7 +226,7 @@ public class newCanvas extends JPanel implements ActionListener{
         toolbar.add(recent1);
         toolbar.add(recent2);
         toolbar.add(recent3);
-        
+        add(usersFrame);
         //toolbar.add(boardNum);
         add(toolbar);
         //Make the buttons, add the mouse listener to them, and add the buttons to the canvas.
@@ -252,7 +255,7 @@ public class newCanvas extends JPanel implements ActionListener{
     
     
     public void updateUsers(String newUsers){
-    	users = newUsers;
+    	userField.setText(newUsers);
     }
     
     /*

@@ -155,7 +155,7 @@ public class Client {
                         this.users = newUserList;
                         String view = "";
                         for (String user: this.users){
-                                view += user +"\n";
+                                view += user +"\n\r";
                         }
                         this.ourCanvas.updateUsers(view);
                 }
