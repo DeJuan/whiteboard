@@ -18,7 +18,14 @@ import canvas.Brushstroke;
  * 
  * The argument for concurrency has two main points. The first is that we need to make sure that new users 
  * have a state that matches the state of the board. To ensure this, whenever a new user connects, 
- * we synchronize on our lock object while the iterator goes through the list of strokes and updates the newbie.
+ * we synchronize on a lock object while the iterator goes through the list of strokes and updates the newbie.
+ *  To accomplish this locking strategy, I have created an arrayList of Objects called locksmith, which contains an object for every board. This object is the board's lock. 
+ *  Whenever we join a new board, since we have to request the board number, we use that number to index into the locksmith, grab the board's lock object,
+ *  and lock on it. This prevents us from locking up the entire board when someone joins so we can still register strokes in the background, 
+ *  and then update everyone once the original update is completed to all of the background-registered strokes. 
+ *  Thus, this approach heightens concurrency by allowing other operations on the board class while an update is in progress, yet still ensures
+ *  all clients will have the same state once the update is completed. 
+ *  
  * Once the update is completed, we release the lock and all changes made during the lock period are then processed and simultaneously
  * updated to all users. 
  * 
@@ -27,6 +34,7 @@ import canvas.Brushstroke;
  * We executed real-time testing on this system and it does properly resolve strokes in the order they were made. For example, one person chose an eraser then the other chose a color, and
  * we chased each other, with the one behind gaining speed and eventually overlapping then overtaking the other. The behavior was exactly as expected; When they overlap, the one who moves off
  * the point in space last gets the overwrite. This is as expected; if you erase and I draw right behind you, my drawing should appear and not be erased.
+ *  
  *  
  * @param port
  * @param boardCount
@@ -42,7 +50,7 @@ public class Server
 	private Map<Socket, String> userSocketToUsername = new HashMap<Socket, String>();
 	public BlockingQueue<String> queue;
 	private ServerSocket serverSocket;
-	private Object lock = new Object(); //Made so that I don't lock on the class if I need to synchro something. 
+	private ArrayList<Object> locksmith = new ArrayList<Object>(); //Made so that I don't lock on the class if I need to synchro something. 
 	
 	
 	public Server(int port, int boardCount) throws IOException
@@ -51,6 +59,7 @@ public class Server
 		{
 			listOfBoards.add(new Board(i));
 			boardNumberToBoardUsers.put(i, new ArrayList<String>());
+			locksmith.add(new Object());
 		}
 		try 
 		{
@@ -85,7 +94,7 @@ public class Server
 	 */
 	public void addNewUserToBoard(String userName, int desiredBoard, Socket socket) throws Exception
 	{
-		//called from a new socket, initializing a user's info to point to the board we need. May need synchronization.
+		//called from a new socket, initializing a user's info to point to the board we need.
 		ArrayList<String> potentialBoardAndUsers = this.boardNumberToBoardUsers.get(desiredBoard);
 		if (!potentialBoardAndUsers.contains(userName))
 		{
@@ -93,13 +102,6 @@ public class Server
 			listOfBoards.get(desiredBoard).addUser(socket);
 			userSocketToUsername.put(socket, userName);
 			usernameToBoardNumber.put(userName, desiredBoard);
-			/*
-			List<Brushstroke> allStrokes = listOfBoards.get(desiredBoard).getStrokes();
-			PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-			for(Brushstroke stroke: allStrokes)
-			{
-				output.println("brushstroke " + stroke.toString() + " " + desiredBoard);
-			}*/
 			
 		}
 		else //TODO REMEMBER TO TEST USERNAME OVERLAPS. THIS MAY OR MAY NOT CRASH THE ENTIRE SERVER!!!!!!
@@ -165,7 +167,6 @@ public class Server
 	                    {
 	                        try 
 	                        {
-	                        	//removeUserFromBoard(socket);
 								socket.close();
 							} 
 	                        catch (Exception e) 
@@ -201,7 +202,6 @@ public class Server
 	        {
 	            for (String line = in.readLine(); line != null; line = in.readLine())  
 	            {
-	            	//System.out.println("Succeeded in making in and out, and am about to call handleRequest");
 	                String output = handleRequest(line, socket);    
 	                
 	                if( output == "Disconnect") 
@@ -214,11 +214,9 @@ public class Server
 	                {
 	                	if(output.startsWith("brushstroke"))
 	                	{
-	                		//System.out.println("brushy detected!! It is: " + output);
 	                		ArrayList<Socket> users = this.listOfBoards.get(Integer.parseInt(output.split(" ")[7])).getBoardUsers();
 	                		for(Socket user: users)
 	                		{
-	                			//System.out.println("Printing to socket: " + user);
 	                			PrintWriter localOut = new PrintWriter(user.getOutputStream(), false);
 	                			localOut.println(output);
 	                			localOut.flush();
@@ -238,7 +236,6 @@ public class Server
 	        } 	
 	        	finally 
 	        	{
-	        		//removeUserFromBoard(socket);
 	            	out.close();
 	            	in.close();
 	        	}
@@ -255,7 +252,7 @@ public class Server
 	        String[] tokens = input.split(" ");
 	        if (tokens[0].equals("brushstroke")) //"brushstroke x1 x2 y1 y2 ColorData width boardnum 
 	        {
-	        	synchronized(lock)
+	        	synchronized(locksmith.get(Integer.parseInt(tokens[7])))
 	        	{
 	        	int boardNumber = Integer.parseInt(input.split(" ")[7]);
 	        	Board board = listOfBoards.get(boardNumber);
@@ -271,7 +268,6 @@ public class Server
 						ArrayList<Socket> users = this.listOfBoards.get(boardNum).getBoardUsers();
                 		for(Socket user: users)
                 		{
-                			//System.out.println("Printing to socket: " + user);
                 			PrintWriter localOut = new PrintWriter(user.getOutputStream(), true);
                 			localOut.println(userListParser(boardNum));
                 			localOut.flush();
@@ -294,10 +290,8 @@ public class Server
 	        		ArrayList<Socket> users = this.listOfBoards.get(boardNum).getBoardUsers();
             		for(Socket user: users)
             		{
-            			//System.out.println("Printing to socket: " + user);
             			PrintWriter localOut = new PrintWriter(user.getOutputStream(), true);
             			localOut.println(userListParser(boardNum));
-            			//localOut.flush();
             		}
 				} 
 	        	catch (Exception e) 
@@ -320,11 +314,12 @@ public class Server
 	        		int boardNum = Integer.parseInt(tokens[1]);
 	        		List<Brushstroke> allStrokes = this.listOfBoards.get(boardNum).getStrokes();
 	        		PrintWriter temp = new PrintWriter(socket.getOutputStream(), true);
-	        		synchronized(lock){
-	        		for(Brushstroke stroke: allStrokes)
+	        		synchronized(locksmith.get(boardNum))
 	        		{
-	        			temp.println("brushstroke " + stroke.toString() + " " + boardNum);
-	        		}
+	        		for(Brushstroke stroke: allStrokes)
+	        			{
+	        				temp.println("brushstroke " + stroke.toString() + " " + boardNum);
+	        			}
 	        		}
 	        		return null;
 				} 
