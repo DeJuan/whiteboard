@@ -38,7 +38,7 @@ public class Client {
 		this.port = port;
 		this.username=username;
 		this.boardNumber= boardNumber;
-		this.ourCanvas= new newCanvas(500,800,this,boardNumber);
+		this.ourCanvas= new newCanvas(800,500,this,boardNumber);
 		
 		this.socket= new Socket(this.address, this.port);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -113,7 +113,11 @@ public class Client {
 					newUserList.add(tokens[i]);
 				}
 				this.users = newUserList;
-				//this.ourCanvas.getBoardUsers();
+				String view = "";
+				for (String user:users){
+					view+=(user + "\n");
+				}
+				this.ourCanvas.updateUsers(view);
 			}
 			else if (tokens[0].equals("Welcome")){}
 			else{
@@ -125,6 +129,7 @@ public class Client {
 	/*
 	 * translateBrushstroke() takes a brushstroke and returns a properly formatted string
 	 * as per our protocol.
+	 * @b - the burshstroke to be translated.
 	 */
 	public String translateBrushstroke(Brushstroke b){
 		return "brushstroke " + b.toString() + " " + this.boardNumber;
@@ -140,6 +145,7 @@ public class Client {
 	
 	/*
 	 * join takes a boardID and sends a properly formatted joinBoard request to the server
+	 * @param boardID - the board to join
 	 */
 	public void join(int boardID){
 		String request = "joinBoard " + username + " "+ boardID;
@@ -157,7 +163,6 @@ public class Client {
 	 */
 	public void exit(){
 		this.send("exitBoard "+ username + " " + this.boardNumber);
-		//TODO: deal with switching the socket
 	}
 	
 	/*
@@ -257,12 +262,7 @@ public class Client {
         				
         		);
         
-//		addressReq.add(addressLabel);
-//		addressReq.add(address);
-//		addressReq.add(portLabel);
-//		addressReq.add(port);
-//		addressReq.add(go);
-        
+
         addressReq.setLayout(layout);
         box.add(addressReq);
 		box.setVisible(true);
