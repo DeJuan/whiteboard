@@ -19,6 +19,9 @@ import canvas.*;
  * The CLient class is used to communicate with the server and GUI. It listens to the server,
  * it sends messages to server based on commands from the GUI, and it updates the GUI based on
  * incoming info from the server.
+ * 
+ * The client consists of two threads, one for receiving info from the server, and one for
+ * sending messages to the server. It is thread-safe, because the two thread do not share any variables. 
  */
 
 public class Client {
@@ -39,14 +42,14 @@ public class Client {
 		this.port = port;
 		this.username=username;
 		this.boardNumber= boardNumber;
-		this.ourCanvas= new newCanvas(500,800,this,boardNumber);
+		this.ourCanvas= new newCanvas(800,500,this,boardNumber);
 		
 		this.socket= new Socket(this.address, this.port);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
         
         JFrame window = new JFrame("Freehand Canvas");
-		System.out.println("Check");
+		
         
         window.setLayout(new BorderLayout());
         window.addWindowListener(new WindowListener(){
@@ -65,7 +68,6 @@ public class Client {
 	            try {
 	                socket.close();
                 } catch (IOException e) {
-	                // TODO Auto-generated catch block
 	                e.printStackTrace();
                 }
 	            
@@ -91,13 +93,7 @@ public class Client {
         window.pack();
         window.setVisible(true);
         
-        System.out.println("About to listen");
         this.listen();
-//        try{
-//        	Thread.sleep(1000);
-//        }catch(Exception e){
-//        	e.printStackTrace();
-//        }
         this.join(boardNumber);
         this.getAllBrushstrokes();
         
@@ -121,7 +117,7 @@ public class Client {
 		        }
 				try {
 					for (String line =in.readLine(); line!=null; line=in.readLine()) {
-						System.out.println(line);
+						
 			            handleResponses(line);
 			        }
 		        } catch (IOException e) {
@@ -157,7 +153,11 @@ public class Client {
 				newUserList.add(tokens[i]);
 			}
 			this.users = newUserList;
-			//this.ourCanvas.getBoardUsers();
+			String view = "";
+			for (String user: this.users){
+				view += user +"\n";
+			}
+			//this.ourCanvas.updateUsers(view);
 		}
 		else if (tokens[0].equals("Welcome")){}
 		else{
@@ -168,6 +168,7 @@ public class Client {
 	/*
 	 * translateBrushstroke() takes a brushstroke and returns a properly formatted string
 	 * as per our protocol.
+	 * @param b - a brushstroke to be translated
 	 */
 	public String translateBrushstroke(Brushstroke b){
 		return "brushstroke " + b.toString() + " " + this.boardNumber;
@@ -177,7 +178,6 @@ public class Client {
 	 * @param request - a properly formatted request string, as per the protocol.
 	 */
 	public void send(String request){
-		//System.out.println(request);
 		this.out.println(request);
 	}
 	
@@ -205,6 +205,7 @@ public class Client {
 	
 	/*
 	 * getBoardNumber number is used by the GUI to get the board number.
+	 * @returns the current board number.
 	 */
 	public int getBoardNumber(){
 		return this.boardNumber;
@@ -253,7 +254,6 @@ public class Client {
 	            int p = Integer.parseInt(port.getText());
 	            String user = username.getText();
 	            String boardNumber = boards.getSelectedItem().toString();
-	            System.out.println(adr + " " + p + " " + user + " " + boardNumber);
 	            try {
 	            	box.dispose();
 	                new Client(adr,p, user, Integer.parseInt(boardNumber));
@@ -299,11 +299,6 @@ public class Client {
         				
         		);
         
-//		addressReq.add(addressLabel);
-//		addressReq.add(address);
-//		addressReq.add(portLabel);
-//		addressReq.add(port);
-//		addressReq.add(go);
         
         addressReq.setLayout(layout);
         box.add(addressReq);
