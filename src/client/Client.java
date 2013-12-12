@@ -48,7 +48,7 @@ public class Client {
                 this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
         
-        JFrame window = new JFrame("Freehand Canvas");
+        JFrame window = new JFrame("Freehand Canvas - Board " + this.boardNumber);
                 
         
         window.setLayout(new BorderLayout());
@@ -155,7 +155,7 @@ public class Client {
                         this.users = newUserList;
                         String view = "";
                         for (String user: this.users){
-                                view += user +"---\r\n";
+                                view += user +"\r\n";
                         }
                         this.ourCanvas.updateUsers(view);
                 }

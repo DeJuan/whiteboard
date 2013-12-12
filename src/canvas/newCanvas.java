@@ -51,10 +51,13 @@ public class newCanvas extends JPanel implements ActionListener{
     private int colorButtonSelected = 0;
     private String users;
     private Client client;
-    private JFrame usersFrame = new JFrame(); 
+    private JFrame usersFrame = new JFrame("Current Users"); 
     private JButton openUserList;
-    private JTextField userField;
+    private JTextArea userField;
     boolean usersFrameOpen = false;
+//    private JButton recent1;
+//    private JButton recent2;
+//    private JButton recent3;
     
     
     /**
@@ -70,9 +73,7 @@ public class newCanvas extends JPanel implements ActionListener{
         addDrawingController();
         addEraserController();
         currentBoard = startingBoardNumber;
-        //JLabel boardNum = new JLabel(currentBoard.toString());
-        //boardMenu = new JMenu("Change Boards");
-        userField = new JTextField(this.users);
+        userField = new JTextArea(this.users);
         userField.setEditable(false);
         JToolBar toolbar = new JToolBar();                
         usersFrame.add(userField);
@@ -90,7 +91,7 @@ public class newCanvas extends JPanel implements ActionListener{
         	usersFrame.setVisible(false);
         }
        
-        //usersFrame.setSize(new Dimension(100,50));
+        usersFrame.setSize(new Dimension(120,200));
         //usersFrame.setDefaultCloseOperation(HIDE_ON_CLOSE);
         
         //toolbar will display the 3 most recent colors. 
@@ -182,29 +183,29 @@ public class newCanvas extends JPanel implements ActionListener{
         	yellow.setFocusPainted(false);
         }
         
-        JButton recent1 = new JButton();
-        recent1.setBackground(RecentColors.get(1));
-        recent1.setPreferredSize(new Dimension(30,30));
-        recent1.setActionCommand("recent1");
-        recent1.setOpaque(true);
-        recent1.addActionListener(this);
-        if(colorButtonSelected == 6){
-        	
-        }
-        
-        JButton recent2 = new JButton();
-        recent2.setBackground(RecentColors.get(2));
-        recent2.setPreferredSize(new Dimension(30,30));
-        recent2.setActionCommand("recent2");
-        recent2.setOpaque(true);
-        recent2.addActionListener(this);
-        
-        JButton recent3 = new JButton();
-        recent3.setBackground(RecentColors.get(3));
-        recent3.setPreferredSize(new Dimension(30,30));
-        recent3.setActionCommand("recent3");
-        recent3.setOpaque(true);
-        recent3.addActionListener(this);
+//        recent1 = new JButton();
+//        recent1.setBackground(RecentColors.get(1));
+//        recent1.setPreferredSize(new Dimension(30,30));
+//        recent1.setActionCommand("recent1");
+//        recent1.setOpaque(true);
+//        recent1.addActionListener(this);
+//        if(colorButtonSelected == 6){
+//        	
+//        }
+//        
+//        recent2 = new JButton();
+//        recent2.setBackground(RecentColors.get(2));
+//        recent2.setPreferredSize(new Dimension(30,30));
+//        recent2.setActionCommand("recent2");
+//        recent2.setOpaque(true);
+//        recent2.addActionListener(this);
+//        
+//        recent3 = new JButton();
+//        recent3.setBackground(RecentColors.get(3));
+//        recent3.setPreferredSize(new Dimension(30,30));
+//        recent3.setActionCommand("recent3");
+//        recent3.setOpaque(true);
+//        recent3.addActionListener(this);
         
         JLabel widthLabel = new JLabel("Pen Size");
         strokeWidth = new JSlider(JSlider.HORIZONTAL,1,50,1);
@@ -223,11 +224,11 @@ public class newCanvas extends JPanel implements ActionListener{
         toolbar.add(green);
         toolbar.add(black);
         toolbar.add(yellow);
-        toolbar.add(recent1);
-        toolbar.add(recent2);
-        toolbar.add(recent3);
+//        toolbar.add(recent1);
+//        toolbar.add(recent2);
+//        toolbar.add(recent3);
         
-        //toolbar.add(boardNum);
+       
         add(toolbar);
         //Make the buttons, add the mouse listener to them, and add the buttons to the canvas.
         
@@ -422,19 +423,7 @@ public class newCanvas extends JPanel implements ActionListener{
 	}
 	   
    }
-    /*
-    private void eraserLineSegment(int x1, int y1, int x2, int y2) 
-    {
-        Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-        g.setColor(Color.WHITE);
-        g.setStroke(new BasicStroke(Integer.parseInt(strokeWidth.getText()), BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
-        g.drawLine(x1, y1, x2, y2);
-        
-        // IMPORTANT!  every time we draw on the internal drawing buffer, we
-        // have to notify Swing to repaint this component on the screen.
-        this.repaint();
-    }
-    */
+   
 
     private void eraserLineSegment(Brushstroke eraserStroke)
     {
@@ -528,36 +517,38 @@ public class newCanvas extends JPanel implements ActionListener{
     		colorButtonSelected = 5;
     		currentPenColor = Color.yellow;
     	}
-    	else if("recent1".equals(e.getActionCommand())){
-    		colorButtonSelected = 6;
-    		currentPenColor = RecentColors.get(1);
-    		Color temp = RecentColors.get(1);
-    		RecentColors.remove(1);
-    		RecentColors.add(0,temp);
-    	}
-    	else if("recent2".equals(e.getActionCommand())){
-    		colorButtonSelected = 7;
-    		currentPenColor = RecentColors.get(2);
-    		Color temp0 = RecentColors.get(2);
-    		RecentColors.remove(2);
-    		RecentColors.add(0, temp0);
-    	}
-    	else if("recent3".equals(e.getActionCommand())){
-    		colorButtonSelected  = 8;
-    		currentPenColor = RecentColors.get(3);
-    		Color temp0 = RecentColors.get(3);
-    		RecentColors.remove(3);
-    		RecentColors.add(0,temp0);
-    	}
+//    	else if("recent1".equals(e.getActionCommand())){
+//    		colorButtonSelected = 6;
+//    		currentPenColor = RecentColors.get(1);
+//    		Color temp = RecentColors.get(1);
+//    		RecentColors.remove(1);
+//    		RecentColors.add(0,temp);
+//		recent1.setBackground(RecentColors.get(RecentColors.size()-1));
+//		recent2.setBackground(RecentColors.get(RecentColors.size()-2));
+//		recent3.setBackground(RecentColors.get(RecentColors.size()-3));
+//    	}
+//    	else if("recent2".equals(e.getActionCommand())){
+//    		colorButtonSelected = 7;
+//    		currentPenColor = RecentColors.get(2);
+//    		Color temp0 = RecentColors.get(2);
+//    		RecentColors.remove(2);
+//    		RecentColors.add(0, temp0);
+//    		recent1.setBackground(RecentColors.get(RecentColors.size()-1));
+//    		recent2.setBackground(RecentColors.get(RecentColors.size()-2));
+//    		recent3.setBackground(RecentColors.get(RecentColors.size()-3));
+//    	}
+//    	else if("recent3".equals(e.getActionCommand())){
+//    		colorButtonSelected  = 8;
+//    		currentPenColor = RecentColors.get(3);
+//    		Color temp0 = RecentColors.get(3);
+//    		RecentColors.remove(3);
+//    		RecentColors.add(0,temp0);
+//    		recent1.setBackground(RecentColors.get(RecentColors.size()-1));
+//    		recent2.setBackground(RecentColors.get(RecentColors.size()-2));
+//    		recent3.setBackground(RecentColors.get(RecentColors.size()-3));
+//    	}
     	else if("userList".equals(e.getActionCommand())){
-    		if(!usersFrameOpen){
     			usersFrame.setVisible(true);
-    			usersFrameOpen = true;
-    		}
-    		else{
-    			usersFrame.setVisible(false);
-    			usersFrameOpen = false;
-    		}
     	}
     }
     
