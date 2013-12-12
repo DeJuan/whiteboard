@@ -27,13 +27,8 @@ import client.Client;
 
 
 /**
- * This is the currently used version of the canvas.
- * It currently has a toolbar containing eraser button, color select, pen size, and reset button. 
- * 
- * Note that as it functions now, the palette popup bypasses the 
- * palette listener, directly returning the color when the user clicks OK.
- * I then change the current pen color to the returned color from the dialog.
- * @author DeJuan 
+ * newCanvas is the graphical user interface for our whiteboard. It is called by client when the client
+ * starts up.
  */
 public class newCanvas extends JPanel implements ActionListener{
     
@@ -44,7 +39,6 @@ public class newCanvas extends JPanel implements ActionListener{
     private JSlider strokeWidth;
     private Color currentPenColor = Color.black;
     private JColorChooser palette = new JColorChooser(Color.black);
-    //private JMenu boardMenu;
     private ArrayList<Color> RecentColors = new ArrayList<Color>(); 
     private int currentBoard;
     private JLabel boardNum;
@@ -55,9 +49,7 @@ public class newCanvas extends JPanel implements ActionListener{
     private JButton openUserList;
     private JTextArea userField;
     boolean usersFrameOpen = false;
-//    private JButton recent1;
-//    private JButton recent2;
-//    private JButton recent3;
+
     
     
     /**
@@ -65,6 +57,7 @@ public class newCanvas extends JPanel implements ActionListener{
      * @param width width in pixels
      * @param height height in pixels
      * @param client to connect with canvas
+     * @param startingBoardNumber - the initial board number
      */
     public newCanvas(int width, int height, Client client, int startingBoardNumber) 
     {
@@ -92,20 +85,7 @@ public class newCanvas extends JPanel implements ActionListener{
         }
        
         usersFrame.setSize(new Dimension(120,200));
-        //usersFrame.setDefaultCloseOperation(HIDE_ON_CLOSE);
         
-        //toolbar will display the 3 most recent colors. 
-        //gray orange and pink display until
-        RecentColors.add(Color.magenta);
-        RecentColors.add(Color.gray);
-        RecentColors.add(Color.orange);
-        RecentColors.add(Color.pink);
-               
-        
-       
-       
-        
-        //must still add listener to change to new board when clicked. 
         
         PaletteListener paletteController = new PaletteListener();
         palette.getSelectionModel().addChangeListener(paletteController);
@@ -114,8 +94,6 @@ public class newCanvas extends JPanel implements ActionListener{
         JButton paletteButton = new JButton("Show Color Palette");
         paletteButton.addMouseListener(new PalettePopupListener());
         
-        JButton resetter = new JButton("Reset All");
-        resetter.addMouseListener(new resetListener());
         
         JButton blue = new JButton();
         blue.setBackground(Color.blue);
@@ -183,29 +161,7 @@ public class newCanvas extends JPanel implements ActionListener{
         	yellow.setFocusPainted(false);
         }
         
-//        recent1 = new JButton();
-//        recent1.setBackground(RecentColors.get(1));
-//        recent1.setPreferredSize(new Dimension(30,30));
-//        recent1.setActionCommand("recent1");
-//        recent1.setOpaque(true);
-//        recent1.addActionListener(this);
-//        if(colorButtonSelected == 6){
-//        	
-//        }
-//        
-//        recent2 = new JButton();
-//        recent2.setBackground(RecentColors.get(2));
-//        recent2.setPreferredSize(new Dimension(30,30));
-//        recent2.setActionCommand("recent2");
-//        recent2.setOpaque(true);
-//        recent2.addActionListener(this);
-//        
-//        recent3 = new JButton();
-//        recent3.setBackground(RecentColors.get(3));
-//        recent3.setPreferredSize(new Dimension(30,30));
-//        recent3.setActionCommand("recent3");
-//        recent3.setOpaque(true);
-//        recent3.addActionListener(this);
+
         
         JLabel widthLabel = new JLabel("Pen Size");
         strokeWidth = new JSlider(JSlider.HORIZONTAL,1,50,1);
@@ -224,9 +180,7 @@ public class newCanvas extends JPanel implements ActionListener{
         toolbar.add(green);
         toolbar.add(black);
         toolbar.add(yellow);
-//        toolbar.add(recent1);
-//        toolbar.add(recent2);
-//        toolbar.add(recent3);
+
         
        
         add(toolbar);
@@ -303,7 +257,10 @@ public class newCanvas extends JPanel implements ActionListener{
         // have to notify Swing to repaint this component on the screen.
         this.repaint();
     }
-    
+    /*
+     * An alternative way to draw line segements. It takes a brushstroke, and draws the line 
+     * it represents.
+     */
     public void drawLineSegment(Brushstroke Brushstroke)
     {
     	Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
@@ -359,7 +316,7 @@ public class newCanvas extends JPanel implements ActionListener{
             lastY = e.getY();
         	}
         }
-//TODO: MAKE THIS USE STROKES, SAME WITH THE ERASER
+
         /*
          * When mouse moves while a button is pressed down,
          * draw a line segment.
@@ -424,7 +381,9 @@ public class newCanvas extends JPanel implements ActionListener{
 	   
    }
    
-
+    /*
+     * eraserLineSegment is used to draw line segments when eraser mode is on.
+     */
     private void eraserLineSegment(Brushstroke eraserStroke)
     {
     	Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
@@ -455,18 +414,11 @@ public class newCanvas extends JPanel implements ActionListener{
     		{
     		int x = e.getX();
     		int y = e.getY();
-    		//try
-    		//{
-    		//made eraser width be controlled by slider
+    		
     		Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, (Integer)strokeWidth.getValue());
     		sendStroke(eraser);
     		
-    		/*}
-    		catch(Exception notaNum)
-    		{
-    			Brushstroke eraser = new Brushstroke(startingX, startingY, x, y, Color.white, 1);
-    			sendStroke(eraser);
-    		*/
+    		
 
     		
     		startingX = x;
@@ -485,9 +437,7 @@ public class newCanvas extends JPanel implements ActionListener{
 
 		@Override
 		public void stateChanged(ChangeEvent colorChosen) {
-			if(isNewColor(palette.getColor())){
-				RecentColors.add(0,palette.getColor());
-			}
+			
 			currentPenColor = palette.getColor();
 			
 			
@@ -517,51 +467,13 @@ public class newCanvas extends JPanel implements ActionListener{
     		colorButtonSelected = 5;
     		currentPenColor = Color.yellow;
     	}
-//    	else if("recent1".equals(e.getActionCommand())){
-//    		colorButtonSelected = 6;
-//    		currentPenColor = RecentColors.get(1);
-//    		Color temp = RecentColors.get(1);
-//    		RecentColors.remove(1);
-//    		RecentColors.add(0,temp);
-//		recent1.setBackground(RecentColors.get(RecentColors.size()-1));
-//		recent2.setBackground(RecentColors.get(RecentColors.size()-2));
-//		recent3.setBackground(RecentColors.get(RecentColors.size()-3));
-//    	}
-//    	else if("recent2".equals(e.getActionCommand())){
-//    		colorButtonSelected = 7;
-//    		currentPenColor = RecentColors.get(2);
-//    		Color temp0 = RecentColors.get(2);
-//    		RecentColors.remove(2);
-//    		RecentColors.add(0, temp0);
-//    		recent1.setBackground(RecentColors.get(RecentColors.size()-1));
-//    		recent2.setBackground(RecentColors.get(RecentColors.size()-2));
-//    		recent3.setBackground(RecentColors.get(RecentColors.size()-3));
-//    	}
-//    	else if("recent3".equals(e.getActionCommand())){
-//    		colorButtonSelected  = 8;
-//    		currentPenColor = RecentColors.get(3);
-//    		Color temp0 = RecentColors.get(3);
-//    		RecentColors.remove(3);
-//    		RecentColors.add(0,temp0);
-//    		recent1.setBackground(RecentColors.get(RecentColors.size()-1));
-//    		recent2.setBackground(RecentColors.get(RecentColors.size()-2));
-//    		recent3.setBackground(RecentColors.get(RecentColors.size()-3));
-//    	}
+
     	else if("userList".equals(e.getActionCommand())){
     			usersFrame.setVisible(true);
     	}
     }
     
-    private boolean isNewColor(Color c){
-    	if(!c.equals(Color.blue) && !c.equals(Color.red) && !c.equals(Color.green) && !c.equals(Color.black) 
-    			&& !c.equals(Color.yellow) && !c.equals(RecentColors.get(0)) && !c.equals(RecentColors.get(1))
-    				&& !c.equals(RecentColors.get(2))){
-    		return true;
-    	}
-    	else{
-    		return false;
-    	}
-    }
+
     
     private class PalettePopupListener implements MouseListener{
 
@@ -589,43 +501,5 @@ public class newCanvas extends JPanel implements ActionListener{
     	
     }
     
-  //For the reset button.
-    private class resetListener implements MouseListener{
-
-		@Override
-		public void mouseClicked(MouseEvent e) 
-		{
-			fillWithWhite();	
-		}
-		//Ignore the other cases for this button. You hit it, you hit it.
-		@Override
-		public void mouseEntered(MouseEvent e) {}
-
-		@Override
-		public void mouseExited(MouseEvent e) {}
-
-		@Override
-		public void mousePressed(MouseEvent e) {}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {}    
-    	
-    }
-    /*
-     * Main program. Make a window containing a Canvas.
-     */
-    public static void main(String[] args) {
-        // set up the UI (on the event-handling thread)
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JFrame window = new JFrame("Freehand Canvas");
-                window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                window.setLayout(new BorderLayout());
-                newCanvas canvas = new newCanvas(800, 600, null, 0);
-                window.add(canvas, BorderLayout.CENTER);
-                window.pack();
-                window.setVisible(true);
-            }
-        });
-    }
+    
 }

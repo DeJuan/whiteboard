@@ -238,7 +238,7 @@ public class Client {
                 final JTextField address = new JTextField();
                 JLabel portLabel = new JLabel("Port Number?");
                 final JTextField port = new JTextField();
-                JLabel usernameLabel = new JLabel("Username");
+                JLabel usernameLabel = new JLabel("Username - No Spaces Please");
                 final JTextField username = new JTextField();
                 JLabel boardNumLabel = new JLabel("Board #");
                 String[] boardsArray = {"0", "1", "2","3","4","5","6","7","8","9"};
